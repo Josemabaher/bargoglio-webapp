@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+
+  --color-gold-400: #d4af37;
+  --color-gold-500: #c5a028;
+  --color-gold-600: #a3841d;
+
+  --color-velvet-900: #4a0404;
+  --color-bargoglio-red: #A11A16;
+  --color-bargoglio-orange: #FF8C00;
+
+  --color-charcoal-800: #1f1f1f;
+  --color-charcoal-900: #121212;
+
+  --animate-fade-in: fadeIn 0.5s ease-out;
+  --animate-slide-up: slideUp 0.5s ease-out;
+}
+
+/* Custom Utilities */
+@layer utilities {
+  .text-gold {
+    color: var(--color-gold-400);
+  }
+
+  .bg-gold {
+    background-color: var(--color-gold-400);
+  }
+
+  .glass-panel {
+    @apply bg-charcoal-900/60 backdrop-blur-md border border-white/5 shadow-xl;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Base resets if needed, though Tailwind handles most */
+body {
+  @apply bg-stone-950 text-stone-200 overflow-x-hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-serif text-white;
+}

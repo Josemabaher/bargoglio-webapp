@@ -1,0 +1,148 @@
+import { useState, useEffect } from 'react';
+import { Seat } from '@/src/types';
+import { db } from '@/src/lib/firebase/config';
+import { collection, query, onSnapshot, doc } from 'firebase/firestore';
+
+// Fallback / Initial Seed Data Generator (used if DB is empty)
+const generateInitialSeats = (): Seat[] => {
+    // Calibrated data from user (FINAL)
+    const calibratedSeats: Partial<Seat>[] = [
+        // ZONA 1 ($5000) - Calibrado para aspect-ratio 1000/700
+        { id: "Z1-1-1", tableId: "Z1-1", tableNumber: 2, status: "available", x: 30.6, y: 35.33, label: "Zona 1", price: 5000 },
+        { id: "Z1-1-2", tableId: "Z1-1", tableNumber: 2, status: "available", x: 36.87, y: 35.59, label: "Zona 1", price: 5000 },
+        { id: "Z1-1-3", tableId: "Z1-1", tableNumber: 3, status: "available", x: 40.37, y: 35.59, label: "Zona 1", price: 5000 },
+        { id: "Z1-1-4", tableId: "Z1-1", tableNumber: 3, status: "available", x: 46.46, y: 35.59, label: "Zona 1", price: 5000 },
+        { id: "Z1-2-1", tableId: "Z1-2", tableNumber: 10, status: "available", x: 54.53, y: 31.23, label: "Zona 1", price: 5000 },
+        { id: "Z1-2-2", tableId: "Z1-2", tableNumber: 10, status: "available", x: 54.61, y: 22.15, label: "Zona 1", price: 5000 },
+        { id: "Z1-2-3", tableId: "Z1-2", tableNumber: 5, status: "available", x: 46.55, y: 42.12, label: "Zona 1", price: 5000 },
+        { id: "Z1-2-4", tableId: "Z1-2", tableNumber: 19, status: "available", x: 60.44, y: 31.11, label: "Zona 2", price: 4000 },
+        { id: "Z1-3-1", tableId: "Z1-3", tableNumber: 7, status: "available", x: 40.37, y: 48.84, label: "Zona 1", price: 5000 },
+        { id: "Z1-3-2", tableId: "Z1-3", tableNumber: 7, status: "available", x: 46.6, y: 48.9, label: "Zona 1", price: 5000 },
+        { id: "Z1-3-3", tableId: "Z1-3", tableNumber: 9, status: "available", x: 40.28, y: 55.17, label: "Zona 1", price: 5000 },
+        { id: "Z1-3-4", tableId: "Z1-3", tableNumber: 9, status: "available", x: 46.55, y: 55.17, label: "Zona 1", price: 5000 },
+        { id: "Z1-4-1", tableId: "Z1-4", tableNumber: 11, status: "available", x: 55.15, y: 47.04, label: "Zona 1", price: 5000 },
+        { id: "Z1-4-2", tableId: "Z1-4", tableNumber: 22, status: "available", x: 63.84, y: 46.6, label: "Zona 2", price: 4000 },
+        { id: "Z1-4-3", tableId: "Z1-4", tableNumber: 11, status: "available", x: 52.37, y: 50.74, label: "Zona 1", price: 5000 },
+        { id: "Z1-4-4", tableId: "Z1-4", tableNumber: 22, status: "available", x: 60.44, y: 50.82, label: "Zona 2", price: 4000 },
+        { id: "Z1-5-1", tableId: "Z1-5", tableNumber: 4, status: "available", x: 30.69, y: 42.12, label: "Zona 1", price: 5000 },
+        { id: "Z1-5-2", tableId: "Z1-5", tableNumber: 5, status: "available", x: 40.37, y: 42.12, label: "Zona 1", price: 5000 },
+        { id: "Z1-5-3", tableId: "Z1-5", tableNumber: 8, status: "available", x: 36.87, y: 55.3, label: "Zona 1", price: 5000 },
+        { id: "Z1-5-4", tableId: "Z1-5", tableNumber: 6, status: "available", x: 36.96, y: 48.64, label: "Zona 1", price: 5000 },
+        { id: "Z1-6-1", tableId: "Z1-6", tableNumber: 4, status: "available", x: 36.96, y: 42.12, label: "Zona 1", price: 5000 },
+        { id: "Z1-6-2", tableId: "Z1-6", tableNumber: 6, status: "available", x: 30.6, y: 48.39, label: "Zona 1", price: 5000 },
+        { id: "Z1-6-3", tableId: "Z1-6", tableNumber: 8, status: "available", x: 30.69, y: 55.43, label: "Zona 1", price: 5000 },
+        { id: "Z1-7-1", tableId: "Z1-7", tableNumber: 1, status: "available", x: 23.34, y: 35.84, label: "Zona 1", price: 5000 },
+        { id: "Z1-7-2", tableId: "Z1-7", tableNumber: 1, status: "available", x: 23.34, y: 27.14, label: "Zona 1", price: 5000 },
+
+        // ZONA 2 ($4000)
+        { id: "Z2-1-1", tableId: "Z2-1", tableNumber: 14, status: "available", x: 15.73, y: 44.16, label: "Zona 2", price: 4000 },
+        { id: "Z2-1-2", tableId: "Z2-1", tableNumber: 14, status: "available", x: 15.64, y: 50.82, label: "Zona 2", price: 4000 },
+        { id: "Z2-2-1", tableId: "Z2-2", tableNumber: 19, status: "available", x: 60.35, y: 22.15, label: "Zona 2", price: 4000 },
+        { id: "Z2-2-2", tableId: "Z2-2", tableNumber: 20, status: "available", x: 66.26, y: 31.11, label: "Zona 2", price: 4000 },
+        { id: "Z2-3-1", tableId: "Z2-3", tableNumber: 23, status: "available", x: 71.28, y: 41.86, label: "Zona 2", price: 4000 },
+        { id: "Z2-3-2", tableId: "Z2-3", tableNumber: 23, status: "available", x: 71.19, y: 50.69, label: "Zona 2", price: 4000 },
+        { id: "Z2-4-1", tableId: "Z2-4", tableNumber: 16, status: "available", x: 46.37, y: 72.45, label: "Zona 2", price: 4000 },
+        { id: "Z2-4-2", tableId: "Z2-4", tableNumber: 18, status: "available", x: 46.55, y: 78.98, label: "Zona 2", price: 4000 },
+        { id: "Z2-5-1", tableId: "Z2-5", tableNumber: 20, status: "available", x: 66.35, y: 22.27, label: "Zona 2", price: 4000 },
+        { id: "Z2-5-2", tableId: "Z2-5", tableNumber: 14, status: "available", x: 19.94, y: 50.63, label: "Zona 2", price: 4000 },
+        { id: "Z2-6-1", tableId: "Z2-6", tableNumber: 22, status: "available", x: 60.8, y: 41.99, label: "Zona 2", price: 4000 },
+        { id: "Z2-6-2", tableId: "Z2-6", tableNumber: 16, status: "available", x: 40.46, y: 72.33, label: "Zona 2", price: 4000 },
+        { id: "Z2-6-3", tableId: "Z2-6", tableNumber: 18, status: "available", x: 40.46, y: 78.85, label: "Zona 2", price: 4000 },
+        { id: "Z2-7-1", tableId: "Z2-7", tableNumber: 13, status: "available", x: 17.88, y: 27.01, label: "Zona 2", price: 4000 },
+        { id: "Z2-7-2", tableId: "Z2-7", tableNumber: 13, status: "available", x: 17.79, y: 35.84, label: "Zona 2", price: 4000 },
+        { id: "Z2-7-3", tableId: "Z2-7", tableNumber: 12, status: "available", x: 11.51, y: 27.27, label: "Zona 2", price: 4000 },
+        { id: "Z2-7-4", tableId: "Z2-7", tableNumber: 12, status: "available", x: 11.6, y: 35.97, label: "Zona 2", price: 4000 },
+        { id: "Z2-8-1", tableId: "Z2-8", tableNumber: 17, status: "available", x: 36.87, y: 78.85, label: "Zona 2", price: 4000 },
+        { id: "Z2-8-2", tableId: "Z2-8", tableNumber: 17, status: "available", x: 30.69, y: 79.11, label: "Zona 2", price: 4000 },
+        { id: "Z2-8-3", tableId: "Z2-8", tableNumber: 15, status: "available", x: 36.78, y: 72.07, label: "Zona 2", price: 4000 },
+        { id: "Z2-9-1", tableId: "Z2-9", tableNumber: 21, status: "available", x: 72, y: 22.53, label: "Zona 2", price: 4000 },
+        { id: "Z2-9-2", tableId: "Z2-9", tableNumber: 21, status: "available", x: 72.09, y: 31.11, label: "Zona 2", price: 4000 },
+        { id: "Z2-9-3", tableId: "Z2-9", tableNumber: 15, status: "available", x: 30.69, y: 72.33, label: "Zona 2", price: 4000 },
+
+        // ZONA 3 ($3000)
+        { id: "Z3-1-1", tableId: "Z3-1", tableNumber: 25, status: "available", x: 5.42, y: 47.75, label: "Zona 3", price: 3000 },
+        { id: "Z3-1-2", tableId: "Z3-1", tableNumber: 25, status: "available", x: 8.56, y: 43.27, label: "Zona 3", price: 3000 },
+        { id: "Z3-2-1", tableId: "Z3-2", tableNumber: 27, status: "available", x: 46.37, y: 85.64, label: "Zona 3", price: 3000 },
+        { id: "Z3-2-2", tableId: "Z3-2", tableNumber: 29, status: "available", x: 40.37, y: 92.04, label: "Zona 3", price: 3000 },
+        { id: "Z3-3-1", tableId: "Z3-3", tableNumber: 27, status: "available", x: 40.46, y: 85.51, label: "Zona 3", price: 3000 },
+        { id: "Z3-3-2", tableId: "Z3-3", tableNumber: 29, status: "available", x: 46.46, y: 92.17, label: "Zona 3", price: 3000 },
+        { id: "Z3-4-1", tableId: "Z3-4", tableNumber: 24, status: "available", x: 5.69, y: 27.27, label: "Zona 3", price: 3000 },
+        { id: "Z3-4-2", tableId: "Z3-4", tableNumber: 24, status: "available", x: 5.78, y: 35.71, label: "Zona 3", price: 3000 },
+        { id: "Z3-5-1", tableId: "Z3-5", tableNumber: 33, status: "available", x: 95.3, y: 22.4, label: "Zona 3", price: 3000 },
+        { id: "Z3-5-2", tableId: "Z3-5", tableNumber: 31, status: "available", x: 83.74, y: 22.27, label: "Zona 3", price: 3000 },
+        { id: "Z3-5-3", tableId: "Z3-5", tableNumber: 30, status: "available", x: 77.91, y: 31.11, label: "Zona 3", price: 3000 },
+        { id: "Z3-5-4", tableId: "Z3-5", tableNumber: 30, status: "available", x: 77.82, y: 22.4, label: "Zona 3", price: 3000 },
+        { id: "Z3-6-1", tableId: "Z3-6", tableNumber: 28, status: "available", x: 36.87, y: 91.91, label: "Zona 3", price: 3000 },
+        { id: "Z3-6-2", tableId: "Z3-6", tableNumber: 32, status: "available", x: 89.47, y: 22.27, label: "Zona 3", price: 3000 },
+        { id: "Z3-6-3", tableId: "Z3-6", tableNumber: 31, status: "available", x: 83.74, y: 30.98, label: "Zona 3", price: 3000 },
+        { id: "Z3-7-1", tableId: "Z3-7", tableNumber: 28, status: "available", x: 30.69, y: 91.91, label: "Zona 3", price: 3000 },
+        { id: "Z3-7-2", tableId: "Z3-7", tableNumber: 26, status: "available", x: 30.6, y: 85.64, label: "Zona 3", price: 3000 },
+        { id: "Z3-7-3", tableId: "Z3-7", tableNumber: 26, status: "available", x: 36.87, y: 85.64, label: "Zona 3", price: 3000 },
+        { id: "Z3-8-1", tableId: "Z3-8", tableNumber: 33, status: "available", x: 95.39, y: 30.85, label: "Zona 3", price: 3000 },
+        { id: "Z3-8-2", tableId: "Z3-8", tableNumber: 32, status: "available", x: 89.56, y: 31.11, label: "Zona 3", price: 3000 },
+
+        // ZONA 4 ($2000)
+        { id: "Z4-1-1", tableId: "Z4-1", tableNumber: 35, status: "available", x: 56.5, y: 9.22, label: "Zona 4", price: 2000 },
+        { id: "Z4-1-2", tableId: "Z4-1", tableNumber: 34, status: "available", x: 7.57, y: 10.62, label: "Zona 4", price: 2000 },
+        { id: "Z4-1-3", tableId: "Z4-1", tableNumber: 34, status: "available", x: 11.87, y: 10.62, label: "Zona 4", price: 2000 },
+        { id: "Z4-2-1", tableId: "Z4-2", tableNumber: 37, status: "available", x: 82.75, y: 8.96, label: "Zona 4", price: 2000 },
+        { id: "Z4-2-2", tableId: "Z4-2", tableNumber: 36, status: "available", x: 72.54, y: 9.22, label: "Zona 4", price: 2000 },
+        { id: "Z4-2-3", tableId: "Z4-2", tableNumber: 35, status: "available", x: 62.5, y: 8.96, label: "Zona 4", price: 2000 },
+        { id: "Z4-3-1", tableId: "Z4-3", tableNumber: 34, status: "available", x: 7.57, y: 16.9, label: "Zona 4", price: 2000 },
+        { id: "Z4-3-2", tableId: "Z4-3", tableNumber: 37, status: "available", x: 76.93, y: 8.96, label: "Zona 4", price: 2000 },
+        { id: "Z4-3-3", tableId: "Z4-3", tableNumber: 36, status: "available", x: 66.71, y: 9.22, label: "Zona 4", price: 2000 }
+    ];
+
+    const finalSeats: Seat[] = calibratedSeats.map(s => ({
+        ...s,
+        status: 'available',
+        price: s.price || 3000,
+        label: s.label || s.id || '',
+    } as Seat));
+
+    return finalSeats;
+};
+
+export function useSeats(eventId: string | null) {
+    const [seats, setSeats] = useState<Seat[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!eventId) return;
+
+        setLoading(true);
+
+        // Listener for real-time updates
+        const seatsRef = collection(db, 'events', eventId, 'seats');
+
+        const unsubscribe = onSnapshot(seatsRef, (snapshot) => {
+            if (snapshot.empty) {
+                // If DB is empty, use initial seed data locally (In production, you'd seed the DB)
+                // For this demo, we'll pretend the DB returned this.
+                console.warn("No seats found in DB, using fallback data.");
+                setSeats(generateInitialSeats());
+                setLoading(false);
+                return;
+            }
+
+            const activeSeats: Seat[] = [];
+            snapshot.forEach((doc) => {
+                activeSeats.push({ id: doc.id, ...doc.data() } as Seat);
+            });
+
+            setSeats(activeSeats);
+            setLoading(false);
+        }, (err) => {
+            console.error("Error fetching seats:", err);
+            setError("Error de conexión con la base de datos.");
+            setLoading(false);
+            // Fallback on error too for demo purposes so the UI doesn't break
+            setSeats(generateInitialSeats());
+        });
+
+        return () => unsubscribe();
+    }, [eventId]);
+
+    return { seats, loading, error };
+}
