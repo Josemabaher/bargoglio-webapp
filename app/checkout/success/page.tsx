@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaCheckCircle, FaTicketAlt, FaHome, FaCircleNotch } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 
-export default function CheckoutSuccessPage() {
+function SuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const paymentId = searchParams.get("payment_id");
@@ -65,5 +65,17 @@ export default function CheckoutSuccessPage() {
                 )}
             </div>
         </main>
+    );
+}
+
+export default function CheckoutSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-stone-950 flex items-center justify-center">
+                <FaCircleNotch className="w-12 h-12 text-gold-500 animate-spin" />
+            </div>
+        }>
+            <SuccessContent />
+        </Suspense>
     );
 }

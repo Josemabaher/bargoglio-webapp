@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/config";
@@ -25,7 +25,7 @@ interface Reservation {
     checkedIn?: boolean;
 }
 
-export default function ReservationsPage() {
+function ReservationsContent() {
     const searchParams = useSearchParams();
     const urlEventId = searchParams.get("event");
     // const [events, setEvents] = useState<Event[]>([]); // Removed, replaced by useEvents
@@ -353,5 +353,13 @@ export default function ReservationsPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ReservationsPage() {
+    return (
+        <Suspense fallback={<div className="text-white p-8">Cargando reservas...</div>}>
+            <ReservationsContent />
+        </Suspense>
     );
 }
