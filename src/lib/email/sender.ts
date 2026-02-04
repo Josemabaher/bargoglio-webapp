@@ -72,7 +72,7 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
     // 3. Send Email with improved design
     try {
         await resend.emails.send({
-            from: 'Bargoglio <tickets@bargoglio.com>', // Needs verified domain
+            from: 'Bargoglio <onboarding@resend.dev>', // Needs verified domain
             to: [to],
             subject: `Tus entradas para ${reservationDetails.eventName} en Bargoglio`,
             html: `
@@ -171,7 +171,7 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
 export async function sendWelcomeEmail(to: string, name: string, resetLink: string) {
     try {
         await resend.emails.send({
-            from: 'Bargoglio <welcome@bargoglio.com>',
+            from: 'Bargoglio <onboarding@resend.dev>',
             to: [to],
             subject: `Bienvenido a Bargoglio - Crea tu contraseña`,
             html: `
