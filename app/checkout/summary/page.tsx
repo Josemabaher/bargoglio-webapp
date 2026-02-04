@@ -23,6 +23,7 @@ interface CartState {
 
 export default function CheckoutSummaryPage() {
     const router = useRouter();
+    const { settings, loading: loadingSettings } = useSettings();
     const [cart, setCart] = useState<CartState | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -39,7 +40,7 @@ export default function CheckoutSummaryPage() {
         setLoading(false);
     }, []);
 
-    if (loading) {
+    if (loading || loadingSettings) {
         return <div className="min-h-screen bg-stone-950 flex items-center justify-center text-gold-400">Cargando resumen...</div>;
     }
 
@@ -57,7 +58,6 @@ export default function CheckoutSummaryPage() {
 
     // Calculations
     const subtotal = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const { settings, loading: loadingSettings } = useSettings();
     const serviceFeePercentage = settings.serviceFeePercentage; // Dynamic from Firestore
     const serviceFee = subtotal * serviceFeePercentage;
     const total = subtotal + serviceFee;
