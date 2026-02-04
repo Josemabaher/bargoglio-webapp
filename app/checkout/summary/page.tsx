@@ -124,7 +124,7 @@ export default function CheckoutSummaryPage() {
                                 <span className="font-mono">${subtotal.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between text-stone-400">
-                                <span>Servicio Ticketera ({(serviceFeePercentage * 100).toFixed(0)}%)</span>
+                                <span>Servicio Ticketera</span>
                                 <span className="font-mono">${serviceFee.toLocaleString()}</span>
                             </div>
                             <div className="h-px bg-white/10 my-2"></div>
