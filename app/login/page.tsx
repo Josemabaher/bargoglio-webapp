@@ -20,8 +20,25 @@ export default function LoginPage() {
         setLoading(true);
         setError("");
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            router.push("/");
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Dynamic import to keep bundle size low if not used elsewhere, but we need it here.
+            // Actually, best to import at top, but for minimal edit I'll use inline if imports exist, 
+            // but wait, I can just use the same imports as Google login or add them.
+            // Let's assume standard imports are available or I should add them.
+            // I'll add the imports in a separate operation if needed, but for now I'll use the dynamic import pattern or just add imports at top.
+            // Actually the Google login part uses dynamic imports. I should clean this up but I'll stick to the requested pattern.
+
+            const { doc, getDoc } = await import("firebase/firestore");
+            const { db } = await import("@/src/lib/firebase/config");
+
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists() && userDoc.data().role === 'admin') {
+                router.push('/admin/dashboard');
+            } else {
+                router.push("/");
+            }
         } catch (err: any) {
             console.error(err);
             setError("Email o contraseña incorrectos");
@@ -57,9 +74,16 @@ export default function LoginPage() {
                     uid: user.uid,
                     authProvider: "google"
                 });
+                router.push("/");
+            } else {
+                // Check role for existing user
+                const userData = userSnap.data();
+                if (userData.role === 'admin') {
+                    router.push('/admin/dashboard');
+                } else {
+                    router.push("/");
+                }
             }
-
-            router.push("/");
         } catch (err) {
             console.error(err);
             setError("Error al iniciar sesión con Google");

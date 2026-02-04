@@ -13,12 +13,40 @@ const navItems = [
     { name: "Reservas", href: "/admin/reservations", icon: FaMap },
 ];
 
+import { useAuth } from "@/src/lib/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
 export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
     const pathname = usePathname();
+    const { user, userProfile, loading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!loading) {
+            // Require login AND admin role
+            if (!user || userProfile?.role !== 'admin') {
+                router.push('/login');
+            }
+        }
+    }, [user, userProfile, loading, router]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#121212] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-8 h-8 border-4 border-bargoglio-orange border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-stone-500 text-sm uppercase tracking-widest">Verificando acceso...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user || userProfile?.role !== 'admin') return null; // Prevent flash
 
     return (
         <div className="min-h-screen bg-[#121212] text-stone-200 flex">

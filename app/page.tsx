@@ -124,6 +124,9 @@ export default function Home() {
           <p className="text-stone-600 text-sm">
             © {new Date().getFullYear()} Bargoglio. Todos los Derechos Reservados.
           </p>
+          <a href="/login" className="text-stone-800 hover:text-stone-700 text-[10px] mt-4 block uppercase tracking-widest transition-colors">
+            Acceso Administrativo
+          </a>
         </div>
       </footer>
 
