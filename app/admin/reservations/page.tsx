@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/config";
 import { useSeats } from "@/src/hooks/useSeats";
 import { useEvents } from "@/src/hooks/useEvents";
@@ -70,18 +70,54 @@ function ReservationsContent() {
                 const reservationsRef = collection(db, "reservations");
                 const q = query(reservationsRef, where("eventId", "==", selectedEventId));
                 const snapshot = await getDocs(q);
-                const reservationList: Reservation[] = [];
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    reservationList.push({
-                        id: doc.id,
-                        seatIds: data.seatIds || [],
-                        userName: data.userName,
-                        userEmail: data.userEmail,
-                        status: data.status,
-                        checkedIn: data.checkedIn || false,
-                    });
+
+                // 1. First pass: Collect basic reservation data
+                const rawReservations = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })) as any[];
+
+                // 2. Identify missing user names
+                const userIdsToFetch = new Set<string>();
+                rawReservations.forEach(r => {
+                    if ((!r.userName || r.userName === 'Cliente') && r.userId && r.userId !== 'guest_unknown') {
+                        userIdsToFetch.add(r.userId);
+                    }
                 });
+
+                // 3. Fetch user profiles
+                const userMap: Record<string, string> = {};
+                if (userIdsToFetch.size > 0) {
+                    const ids = Array.from(userIdsToFetch);
+                    // Firestore 'in' limit is 10. Split into chunks.
+                    const chunks = [];
+                    for (let i = 0; i < ids.length; i += 10) {
+                        chunks.push(ids.slice(i, i + 10));
+                    }
+
+                    for (const chunk of chunks) {
+                        // We actually can't easily query by doc ID with 'in' in client SDK without documentId() sentinel which is messy in V9 modular.
+                        // Easier to just Promise.all getDoc for simplicity in Admin dashboard (traffic is low).
+                        await Promise.all(chunk.map(async (uid) => {
+                            const userDoc = await getDoc(doc(db, 'users', uid));
+                            if (userDoc.exists()) {
+                                const u = userDoc.data();
+                                userMap[uid] = `${u.nombre || ''} ${u.apellido || ''}`.trim() || u.email || 'Usuario';
+                            }
+                        }));
+                    }
+                }
+
+                // 4. Build final list
+                const reservationList: Reservation[] = rawReservations.map(Data => ({
+                    id: Data.id,
+                    seatIds: Data.seatIds || [],
+                    userName: Data.userName || userMap[Data.userId] || Data.userEmail || "Cliente",
+                    userEmail: Data.userEmail,
+                    status: Data.status,
+                    checkedIn: Data.checkedIn || false,
+                }));
+
                 setReservations(reservationList);
             } catch (err) {
                 console.error("Error fetching reservations:", err);
