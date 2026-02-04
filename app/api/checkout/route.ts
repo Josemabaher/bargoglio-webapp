@@ -87,8 +87,10 @@ export async function POST(req: NextRequest) {
                     fecha_nacimiento: payer.fecha_nacimiento
                 }) : ''
             },
-            notification_url: `${URL}/api/webhooks/mercadopago`
+            notification_url: `${URL.replace(/\/$/, '')}/api/webhooks/mercadopago`
         };
+
+        console.log("Constructed Notification URL:", preferenceBody.notification_url);
 
         console.log("Preference Body:", JSON.stringify(preferenceBody, null, 2));
 
