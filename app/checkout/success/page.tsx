@@ -11,14 +11,24 @@ function SuccessContent() {
     const paymentId = searchParams.get("payment_id");
     const [loading, setLoading] = useState(true);
 
+    const [countdown, setCountdown] = useState(5);
+
     useEffect(() => {
-        // Here we could optionally verify the payment status with our backend
-        // For now, we assume if they land here from MP, it's good (MP handles the security via signature/IPN)
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 1500);
-        return () => clearTimeout(timer);
-    }, []);
+        // Countdown timer
+        const interval = setInterval(() => {
+            setCountdown((prev) => prev - 1);
+        }, 1000);
+
+        // Redirect after 5 seconds
+        const timeout = setTimeout(() => {
+            router.push("/");
+        }, 5000);
+
+        return () => {
+            clearInterval(interval);
+            clearTimeout(timeout);
+        };
+    }, [router]);
 
     return (
         <main className="min-h-screen bg-stone-950 text-white flex flex-col">
@@ -38,6 +48,10 @@ function SuccessContent() {
                         <h1 className="text-3xl font-serif font-bold text-white mb-2">¡Reserva Confirmada!</h1>
                         <p className="text-stone-400 mb-8">
                             Tu pago se procesó correctamente. Te enviamos los tickets a tu email.
+                            <br />
+                            <span className="text-sm text-stone-500 mt-2 block">
+                                Redirigiendo al inicio en <span className="text-gold-400 font-bold">{countdown}</span> segundos...
+                            </span>
                         </p>
 
                         {paymentId && (

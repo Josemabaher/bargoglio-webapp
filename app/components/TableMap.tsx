@@ -41,8 +41,8 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
             {/* Header and Legend removed - moved to parent component */}
 
             <TransformWrapper
-                initialScale={0.8}
-                minScale={0.5}
+                initialScale={0.4}
+                minScale={0.2}
                 maxScale={4}
                 centerOnInit
                 wheel={{ step: 0.1 }}

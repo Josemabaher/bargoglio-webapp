@@ -96,6 +96,21 @@ export default function AdminLayout({
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto">
                 <div className="p-8">
+                    {/* Top Bar */}
+                    <header className="flex justify-between items-center mb-8 pb-4 border-b border-stone-800/50">
+                        <div>
+                            <h2 className="text-xl font-bold text-white">
+                                Hola, <span className="text-bargoglio-orange">{userProfile?.nombre || 'Admin'}</span>
+                            </h2>
+                            <p className="text-stone-500 text-sm">Bienvenido al panel de control.</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-bargoglio-orange/20 flex items-center justify-center text-bargoglio-orange font-bold">
+                                {userProfile?.nombre?.[0] || 'A'}
+                            </div>
+                        </div>
+                    </header>
+
                     {children}
                 </div>
             </main>

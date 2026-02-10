@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
 
                 const reservationRef = await adminDb.collection('reservations').add({
                     eventId: event_id,
-                    eventName: eventData.title || 'Evento',
+                    eventName: eventData.name || eventData.title || 'Evento',
                     userId: user_id,
                     seatIds: seatList,
                     amount: amount,
@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
                     await adminDb.collection('users').doc(user_id).collection('visits').doc(reservationRef.id).set({
                         reservationId: reservationRef.id,
                         eventId: event_id,
-                        eventName: eventData.title || 'Evento',
+                        eventName: eventData.name || eventData.title || 'Evento',
                         date: eventData.date || 'N/A',
                         amount: amount,
                         seats: seatList,
