@@ -109,8 +109,9 @@ export default function CRMPage() {
 
             // Fix timezone offset for string dates causing "day before" display
             // If string is YYYY-MM-DD, new Date() treats as UTC.
-            if (typeof user.fecha_nacimiento === 'string' && user.fecha_nacimiento.includes('-')) {
-                const [y, m, da] = user.fecha_nacimiento.split('-');
+            const fechaNacimientoAny = user.fecha_nacimiento as any;
+            if (typeof fechaNacimientoAny === 'string' && fechaNacimientoAny.includes('-')) {
+                const [y, m, da] = fechaNacimientoAny.split('-');
                 birthDate.setFullYear(parseInt(y), parseInt(m) - 1, parseInt(da));
             }
 
