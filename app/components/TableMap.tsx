@@ -37,11 +37,11 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
     };
 
     return (
-        <div className="w-full relative bg-charcoal-900 rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
+        <div className="w-full aspect-[1000/700] relative bg-charcoal-900 rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
             {/* Header and Legend removed - moved to parent component */}
 
             <TransformWrapper
-                initialScale={0.4}
+                initialScale={0.5}
                 minScale={0.2}
                 maxScale={4}
                 centerOnInit
@@ -62,8 +62,8 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
                             </button>
                         </div>
 
-                        <TransformComponent wrapperClass="!w-full !h-full bg-[#1a1a1a]">
-                            <div className="relative w-full max-w-[1000px] aspect-[1000/700] mx-auto"> {/* New ratio - requires recalibration */}
+                        <TransformComponent wrapperClass="!w-full !h-full" contentStyle={{ width: "100%", height: "100%" }}>
+                            <div className="relative w-[1000px] h-[700px] bg-[#1a1a1a]"> {/* Fixed size for coordinate system */}
 
                                 {/* Background Image */}
                                 <div className="absolute inset-0">
