@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Navbar from "./components/Navbar";
 import WhatsAppButton from "./components/WhatsAppButton";
 import AgendaCard from "./components/AgendaCard";
@@ -24,7 +24,9 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-stone-950 text-stone-200 selection:bg-gold-500/30 font-sans">
-      <SuccessModal />
+      <Suspense fallback={null}>
+        <SuccessModal />
+      </Suspense>
       <Navbar />
 
       {/* Hero Section */}
