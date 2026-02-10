@@ -27,6 +27,8 @@ export default function DashboardPage() {
     const [todayShow, setTodayShow] = useState<{ name: string; reservations: number } | null>(null);
     const [birthdaysThisWeek, setBirthdaysThisWeek] = useState(0);
     const [upcomingEvents, setUpcomingEvents] = useState<EventWithReservations[]>([]);
+    const [upcomingBirthdays, setUpcomingBirthdays] = useState<any[]>([]);
+    const [showBirthdayModal, setShowBirthdayModal] = useState(false);
     const [loading, setLoading] = useState(true);
 
     // Service Fee Config State
@@ -100,60 +102,60 @@ export default function DashboardPage() {
                 const usersRef = collection(db, 'users');
                 const usersSnapshot = await getDocs(usersRef);
 
-                // Calculate week range normalized
-                const weekFromNow = new Date(today);
-                weekFromNow.setDate(today.getDate() + 7);
+                // Calculate range (Next 15 Days)
+                const rangeEnd = new Date(today);
+                rangeEnd.setDate(today.getDate() + 15);
 
-                let birthdayCount = 0;
+                let birthdayList: any[] = [];
                 usersSnapshot.docs.forEach(doc => {
                     const user = doc.data() as UserProfile;
-                    const birthDateRef = user.fecha_nacimiento as any; // Allow string or Timestamp for legacy compatibility
+                    const birthDateRef = user.fecha_nacimiento as any;
 
                     if (birthDateRef) {
                         let birthMonth: number;
                         let birthDay: number;
 
                         if (typeof birthDateRef === 'string') {
-                            // Assume YYYY-MM-DD. Parse parts manually to avoid timezone shifts
-                            // Splits "1990-05-20" -> [1990, 05, 20]
                             const parts = birthDateRef.split('-');
                             if (parts.length === 3) {
-                                birthMonth = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JS Date
+                                birthMonth = parseInt(parts[1], 10) - 1;
                                 birthDay = parseInt(parts[2], 10);
                             } else {
-                                return; // Invalid format
+                                return;
                             }
                         } else if (birthDateRef instanceof Timestamp) {
                             const d = birthDateRef.toDate();
                             birthMonth = d.getMonth();
                             birthDay = d.getDate();
                         } else {
-                            // Should typically be one of the above if schema is respected
                             const d = new Date(birthDateRef);
                             birthMonth = d.getMonth();
                             birthDay = d.getDate();
                         }
 
-                        // Create this year's birthday date at midnight
                         const thisYearBday = new Date(today.getFullYear(), birthMonth, birthDay);
                         thisYearBday.setHours(0, 0, 0, 0);
 
-                        // Handle if birthday has passed this year, check if next year is within range (e.g. late Dec -> early Jan)
                         if (thisYearBday < today) {
-                            // If today is Dec 30 and bday is Jan 2, thisYearBday (Jan 2 2024) < today (Dec 30 2024)? No.
-                            // If today is Dec 30 2024. Bday Jan 2.
-                            // `thisYearBday` = Jan 2 2024. < today.
-                            // Correct check:
                             thisYearBday.setFullYear(today.getFullYear() + 1);
                         }
 
-                        // Check if in range [today, weekFromNow]
-                        if (thisYearBday >= today && thisYearBday <= weekFromNow) {
-                            birthdayCount++;
+                        if (thisYearBday >= today && thisYearBday <= rangeEnd) {
+                            birthdayList.push({
+                                uid: doc.id,
+                                nombre: user.nombre,
+                                apellido: user.apellido,
+                                fecha: thisYearBday.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }),
+                                rawDate: thisYearBday
+                            });
                         }
                     }
                 });
-                setBirthdaysThisWeek(birthdayCount);
+
+                // Sort by date
+                birthdayList.sort((a, b) => a.rawDate.getTime() - b.rawDate.getTime());
+                setBirthdaysThisWeek(birthdayList.length);
+                setUpcomingBirthdays(birthdayList);
 
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);
@@ -209,15 +211,19 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Birthdays This Week */}
-                <div className="bg-[#1a1a1a] border border-stone-800/50 rounded-xl p-6">
+                {/* Birthdays This Week */}
+                <div
+                    onClick={() => setShowBirthdayModal(true)}
+                    className="bg-[#1a1a1a] border border-stone-800/50 rounded-xl p-6 cursor-pointer hover:border-purple-500/50 transition-all hover:scale-[1.02] group"
+                >
                     <div className="flex items-start justify-between">
                         <div className="flex-1">
-                            <p className="text-stone-500 text-sm">Cumpleaños Esta Semana</p>
+                            <p className="text-stone-500 text-sm group-hover:text-purple-400 transition-colors">Cumpleaños Próx. 15 días</p>
                             <p className="text-4xl font-bold text-white mt-2">
                                 {loading ? '...' : birthdaysThisWeek}
                             </p>
                         </div>
-                        <div className="bg-purple-600 p-3 rounded-lg">
+                        <div className="bg-purple-600 p-3 rounded-lg group-hover:bg-purple-500 transition-colors">
                             <FaGift className="w-6 h-6 text-white" />
                         </div>
                     </div>
@@ -382,6 +388,43 @@ export default function DashboardPage() {
                     </div>
                 )}
             </div>
+            {/* Birthday List Modal */}
+            {showBirthdayModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setShowBirthdayModal(false)}>
+                    <div className="bg-[#1a1a1a] w-full max-w-2xl rounded-2xl border border-stone-800 shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="p-6 border-b border-stone-800 flex justify-between items-center">
+                            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                <FaGift className="text-purple-500" /> Próximos Cumpleaños (15 días)
+                            </h3>
+                            <button onClick={() => setShowBirthdayModal(false)} className="text-stone-500 hover:text-white">
+                                <span className="text-2xl">&times;</span>
+                            </button>
+                        </div>
+                        <div className="p-6 max-h-[60vh] overflow-y-auto space-y-3">
+                            {upcomingBirthdays.length === 0 ? (
+                                <p className="text-stone-500 text-center py-8">No hay cumpleaños en los próximos 15 días.</p>
+                            ) : (
+                                upcomingBirthdays.map((bday) => (
+                                    <div key={bday.uid} className="flex items-center justify-between bg-stone-900/50 p-4 rounded-xl border border-white/5">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold">
+                                                {bday.nombre[0]}
+                                            </div>
+                                            <div>
+                                                <p className="text-white font-bold">{bday.nombre} {bday.apellido}</p>
+                                                <p className="text-stone-400 text-sm">{bday.fecha}</p>
+                                            </div>
+                                        </div>
+                                        <Link href={`/admin/crm?search=${bday.email || bday.nombre}`} className="px-3 py-1 bg-white/5 hover:bg-white/10 text-stone-300 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors">
+                                            Ver Perfil
+                                        </Link>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

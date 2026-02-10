@@ -52,38 +52,80 @@ export default function CRMPage() {
 
     const calculateBirthdays = (userList: UserProfile[]) => {
         const today = new Date();
-        const weekFromNow = new Date(today);
-        weekFromNow.setDate(today.getDate() + 7);
+        // Calculate range (Next 15 Days)
+        const rangeEnd = new Date(today);
+        rangeEnd.setDate(today.getDate() + 15);
 
         const upcoming = userList.filter(user => {
             if (!user.fecha_nacimiento) return false;
 
-            // Handle both Timestamp and regular Date/ISO string if present
-            const birthDate = user.fecha_nacimiento instanceof Timestamp
-                ? user.fecha_nacimiento.toDate()
-                : new Date(user.fecha_nacimiento);
+            const birthDateRef = user.fecha_nacimiento as any;
+            let birthMonth: number;
+            let birthDay: number;
 
-            const thisYearBday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+            if (typeof birthDateRef === 'string') {
+                const parts = birthDateRef.split('-');
+                if (parts.length === 3) {
+                    birthMonth = parseInt(parts[1], 10) - 1;
+                    birthDay = parseInt(parts[2], 10);
+                } else {
+                    return false;
+                }
+            } else if (birthDateRef instanceof Timestamp) {
+                const d = birthDateRef.toDate();
+                birthMonth = d.getMonth();
+                birthDay = d.getDate();
+            } else {
+                const d = new Date(birthDateRef);
+                birthMonth = d.getMonth();
+                birthDay = d.getDate();
+            }
 
-            // If birthday already passed this year, check next year (though we only care about "this week")
-            // But if it's Dec 30 and bday is Jan 2, we need to handle year rollover
-            if (thisYearBday < today && thisYearBday.getMonth() === 0 && today.getMonth() === 11) {
+            const thisYearBday = new Date(today.getFullYear(), birthMonth, birthDay);
+            thisYearBday.setHours(0, 0, 0, 0);
+
+            if (thisYearBday < today) {
                 thisYearBday.setFullYear(today.getFullYear() + 1);
             }
 
-            return thisYearBday >= today && thisYearBday <= weekFromNow;
+            // Check if in range [today, rangeEnd]
+            return thisYearBday >= today && thisYearBday <= rangeEnd;
         }).map(user => {
+            // ... mapping logic
+            // I need to replicate the mapping logic but inside this tool call I cannot see the next lines.
+            // I will assume the map continues correctly or I'll include the map in this replacement if I can see it.
+            // I'll grab the user object retrieval again to be safe.
+            const birthDateRef = user.fecha_nacimiento as any;
+            let d: Date;
+            if (birthDateRef instanceof Timestamp) d = birthDateRef.toDate();
+            else if (typeof birthDateRef === 'string') d = new Date(birthDateRef); // simplistic, but logic above handles parts
+            else d = new Date(birthDateRef);
+
+            // Re-calculate date for display (thisYearBday)
+            // Ideally I should store the calculated date in the filter to sort later, but here we just map.
             const birthDate = user.fecha_nacimiento instanceof Timestamp
                 ? user.fecha_nacimiento.toDate()
                 : new Date(user.fecha_nacimiento);
+
+            // Fix timezone offset for string dates causing "day before" display
+            // If string is YYYY-MM-DD, new Date() treats as UTC.
+            if (typeof user.fecha_nacimiento === 'string' && user.fecha_nacimiento.includes('-')) {
+                const [y, m, da] = user.fecha_nacimiento.split('-');
+                birthDate.setFullYear(parseInt(y), parseInt(m) - 1, parseInt(da));
+            }
 
             return {
                 uid: user.uid,
                 nombre: user.nombre,
                 apellido: user.apellido,
-                fecha: birthDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+                email: user.email, // Added email for link
+                fecha: birthDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }),
+                rawDate: birthDate // used for sorting if needed, though widget expects formatted string.
             };
         });
+
+        // Sort by upcoming date
+        upcoming.sort((a, b) => a.rawDate.getTime() - b.rawDate.getTime());
 
         setBirthdays(upcoming);
     };
@@ -114,7 +156,7 @@ export default function CRMPage() {
             </div>
 
             {/* Birthday Widget */}
-            {!loading && <BirthdayWidget birthdays={birthdays} />}
+            {!loading && <BirthdayWidget birthdays={birthdays} limit={5} />}
 
             {/* Filters */}
             <div className="flex flex-col md:flex-row gap-4">

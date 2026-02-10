@@ -21,7 +21,7 @@ function SuccessContent() {
 
         // Redirect after 5 seconds
         const timeout = setTimeout(() => {
-            router.push("/");
+            router.push("/?success=true");
         }, 5000);
 
         return () => {
@@ -69,7 +69,7 @@ function SuccessContent() {
                                 <FaTicketAlt /> Ver Mis Entradas
                             </button>
                             <button
-                                onClick={() => router.push("/")}
+                                onClick={() => router.push("/?success=true")}
                                 className="w-full py-3 bg-transparent hover:bg-white/5 text-stone-400 hover:text-white font-bold uppercase tracking-widest text-sm rounded transition-all flex items-center justify-center gap-2"
                             >
                                 <FaHome /> Volver al Inicio

@@ -63,7 +63,7 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
                         </div>
 
                         <TransformComponent wrapperClass="!w-full !h-full bg-[#1a1a1a]">
-                            <div className="relative w-[1000px] aspect-[1000/700]"> {/* New ratio - requires recalibration */}
+                            <div className="relative w-full max-w-[1000px] aspect-[1000/700] mx-auto"> {/* New ratio - requires recalibration */}
 
                                 {/* Background Image */}
                                 <div className="absolute inset-0">

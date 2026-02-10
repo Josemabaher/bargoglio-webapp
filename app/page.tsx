@@ -8,6 +8,8 @@ import MenuSection from "./components/MenuSection";
 import ContactForm from "./components/ContactForm";
 import { useEvents } from "@/src/hooks/useEvents";
 
+import SuccessModal from "./components/SuccessModal";
+
 export default function Home() {
   const { events, loading: loadingEvents } = useEvents();
 
@@ -22,6 +24,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-stone-950 text-stone-200 selection:bg-gold-500/30 font-sans">
+      <SuccessModal />
       <Navbar />
 
       {/* Hero Section */}
