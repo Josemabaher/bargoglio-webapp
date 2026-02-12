@@ -11,7 +11,7 @@ function SuccessContent() {
     const paymentId = searchParams.get("payment_id");
     const [loading, setLoading] = useState(true);
 
-    const [countdown, setCountdown] = useState(5);
+    const [countdown, setCountdown] = useState(3);
 
     useEffect(() => {
         // Countdown timer
@@ -19,10 +19,10 @@ function SuccessContent() {
             setCountdown((prev) => prev - 1);
         }, 1000);
 
-        // Redirect after 5 seconds
+        // Redirect after 3 seconds
         const timeout = setTimeout(() => {
             router.push("/?success=true");
-        }, 5000);
+        }, 3000);
 
         return () => {
             clearInterval(interval);

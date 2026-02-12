@@ -10,13 +10,13 @@ import { collection, doc, setDoc, Timestamp, writeBatch } from "firebase/firesto
 import { INITIAL_SEATS } from "@/src/lib/data/seats";
 
 // Get price for seat based on label
-function getPriceForSeat(label: string, prices: { zona1: number; zona2: number; zona3: number; zona4: number }) {
+// Get price for seat based on label
+function getPriceForSeat(label: string, prices: { zona1: number; zona2: number; zona3: number }) {
     switch (label) {
         case "Zona 1": return prices.zona1;
         case "Zona 2": return prices.zona2;
         case "Zona 3": return prices.zona3;
-        case "Zona 4": return prices.zona4;
-        default: return prices.zona4;
+        default: return prices.zona3;
     }
 }
 
@@ -30,7 +30,6 @@ export default function NewShowPage() {
         zona1Price: "",
         zona2Price: "",
         zona3Price: "",
-        zona4Price: "",
         category: "show",
         pricingType: "zones",
         generalPrice: "",
@@ -88,7 +87,7 @@ export default function NewShowPage() {
             return;
         }
 
-        if (formData.pricingType === 'zones' && (!formData.zona1Price || !formData.zona2Price || !formData.zona3Price || !formData.zona4Price)) {
+        if (formData.pricingType === 'zones' && (!formData.zona1Price || !formData.zona2Price || !formData.zona3Price)) {
             setError("Por favor completá los precios de todas las zonas.");
             return;
         }
@@ -116,7 +115,6 @@ export default function NewShowPage() {
                 zona1: formData.pricingType === 'zones' ? parseInt(formData.zona1Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0),
                 zona2: formData.pricingType === 'zones' ? parseInt(formData.zona2Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0),
                 zona3: formData.pricingType === 'zones' ? parseInt(formData.zona3Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0),
-                zona4: formData.pricingType === 'zones' ? parseInt(formData.zona4Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0),
             };
 
             // Create event document
@@ -133,7 +131,6 @@ export default function NewShowPage() {
                     { zone: "Zona 1", price: prices.zona1 },
                     { zone: "Zona 2", price: prices.zona2 },
                     { zone: "Zona 3", price: prices.zona3 },
-                    { zone: "Zona 4", price: prices.zona4 },
                 ],
                 createdAt: Timestamp.now(),
                 category: formData.category,
@@ -315,128 +312,125 @@ export default function NewShowPage() {
                     </div>
 
                     {/* Pricing Inputs */}
-                    {formData.pricingType === 'zones' && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in">
-                            {[
-                                { key: "zona1Price", label: "Zona 1 (VIP)", color: "border-yellow-500/50" },
-                                { key: "zona2Price", label: "Zona 2 (Premium)", color: "border-purple-500/50" },
-                                { key: "zona3Price", label: "Zona 3 (General)", color: "border-blue-500/50" },
-                                { key: "zona4Price", label: "Zona 4 (Bar)", color: "border-stone-500/50" },
-                            ].map((zone) => (
-                                <div key={zone.key}>
-                                    <label className="block text-xs font-medium text-stone-500 mb-2">{zone.label}</label>
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
-                                        <input
-                                            type="number"
-                                            value={formData[zone.key as keyof typeof formData]}
-                                            onChange={(e) => setFormData({ ...formData, [zone.key]: e.target.value })}
-                                            placeholder="0"
-                                            className={`w-full pl-8 pr-4 py-3 bg-[#121212] border ${zone.color} rounded-lg text-white placeholder-stone-600 focus:outline-none focus:border-bargoglio-orange/50`}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {formData.pricingType === 'general' && (
-                        <div className="animate-fade-in">
-                            <label className="block text-sm font-medium text-stone-400 mb-2">Precio Entrada General</label>
-                            <div className="relative max-w-md">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-lg">$</span>
+                    {[
+                        { key: "zona1Price", label: "Zona 1 (VIP)", color: "border-yellow-500/50" },
+                        { key: "zona2Price", label: "Zona 2 (Premium)", color: "border-purple-500/50" },
+                        { key: "zona3Price", label: "Zona 3 (General)", color: "border-blue-500/50" },
+                    ].map((zone) => (
+                        <div key={zone.key}>
+                            <label className="block text-xs font-medium text-stone-500 mb-2">{zone.label}</label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
                                 <input
                                     type="number"
-                                    value={formData.generalPrice}
-                                    onChange={(e) => setFormData({ ...formData, generalPrice: e.target.value })}
+                                    value={formData[zone.key as keyof typeof formData]}
+                                    onChange={(e) => setFormData({ ...formData, [zone.key]: e.target.value })}
                                     placeholder="0"
-                                    className="w-full pl-8 pr-4 py-3 bg-[#121212] border border-stone-700 rounded-lg text-white text-lg placeholder-stone-600 focus:outline-none focus:border-bargoglio-orange/50"
+                                    className={`w-full pl-8 pr-4 py-3 bg-[#121212] border ${zone.color} rounded-lg text-white placeholder-stone-600 focus:outline-none focus:border-bargoglio-orange/50`}
                                 />
                             </div>
-                            <p className="text-stone-500 text-sm mt-2">Este precio se aplicará a todas las ubicaciones.</p>
                         </div>
-                    )}
-
-                    {formData.pricingType === 'free' && (
-                        <div className="bg-stone-800/30 border border-stone-800 rounded-lg p-6 text-center animate-fade-in">
-                            <span className="text-3xl mb-2 block">🎟️</span>
-                            <h4 className="text-white font-medium">Evento Gratuito</h4>
-                            <p className="text-stone-500 text-sm mt-1">Los clientes podrán reservar su lugar sin costo.</p>
-                        </div>
-                    )}
+                    ))}
                 </div>
+                    )}
 
-                {/* Flyer Upload */}
-                <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Flyer del Evento</h3>
-                    <div
-                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                        onDragLeave={() => setIsDragging(false)}
-                        onDrop={handleDrop}
-                        className={`relative border-2 border-dashed rounded-xl p-8 transition-colors ${isDragging
-                            ? "border-bargoglio-orange bg-bargoglio-orange/10"
-                            : "border-stone-700 hover:border-stone-600"
-                            }`}
-                    >
-                        {flyerPreview ? (
-                            <div className="relative">
-                                <img
-                                    src={flyerPreview}
-                                    alt="Flyer preview"
-                                    className="max-h-64 mx-auto rounded-lg"
-                                />
-                                <button
-                                    onClick={() => { setFlyerPreview(null); setFlyerFile(null); }}
-                                    className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
-                                >
-                                    <FaTimes className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="text-center">
-                                <FaImage className="w-12 h-12 text-stone-600 mx-auto mb-4" />
-                                <p className="text-stone-400 mb-2">
-                                    Arrastrá el flyer acá o{" "}
-                                    <label className="text-bargoglio-orange cursor-pointer hover:underline">
-                                        buscá en tu computadora
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleFileSelect}
-                                            className="hidden"
-                                        />
-                                    </label>
-                                </p>
-                                <p className="text-stone-600 text-sm">PNG, JPG hasta 5MB</p>
-                            </div>
-                        )}
+                {formData.pricingType === 'general' && (
+                    <div className="animate-fade-in">
+                        <label className="block text-sm font-medium text-stone-400 mb-2">Precio Entrada General</label>
+                        <div className="relative max-w-md">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-lg">$</span>
+                            <input
+                                type="number"
+                                value={formData.generalPrice}
+                                onChange={(e) => setFormData({ ...formData, generalPrice: e.target.value })}
+                                placeholder="0"
+                                className="w-full pl-8 pr-4 py-3 bg-[#121212] border border-stone-700 rounded-lg text-white text-lg placeholder-stone-600 focus:outline-none focus:border-bargoglio-orange/50"
+                            />
+                        </div>
+                        <p className="text-stone-500 text-sm mt-2">Este precio se aplicará a todas las ubicaciones.</p>
                     </div>
-                </div>
+                )}
 
-                {/* Submit */}
-                <div className="flex justify-end gap-4">
-                    <Link
-                        href="/admin/shows"
-                        className="px-6 py-3 bg-stone-800 text-stone-300 rounded-lg font-medium hover:bg-stone-700 transition-colors"
-                    >
-                        Cancelar
-                    </Link>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={saving}
-                        className="px-6 py-3 bg-bargoglio-orange text-white rounded-lg font-medium hover:bg-bargoglio-orange/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                        {saving ? (
-                            <>
-                                <FaSpinner className="w-4 h-4 animate-spin" />
-                                Guardando...
-                            </>
-                        ) : (
-                            'Publicar Show'
-                        )}
-                    </button>
+                {formData.pricingType === 'free' && (
+                    <div className="bg-stone-800/30 border border-stone-800 rounded-lg p-6 text-center animate-fade-in">
+                        <span className="text-3xl mb-2 block">🎟️</span>
+                        <h4 className="text-white font-medium">Evento Gratuito</h4>
+                        <p className="text-stone-500 text-sm mt-1">Los clientes podrán reservar su lugar sin costo.</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Flyer Upload */}
+            <div>
+                <h3 className="text-lg font-semibold text-white mb-4">Flyer del Evento</h3>
+                <div
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleDrop}
+                    className={`relative border-2 border-dashed rounded-xl p-8 transition-colors ${isDragging
+                        ? "border-bargoglio-orange bg-bargoglio-orange/10"
+                        : "border-stone-700 hover:border-stone-600"
+                        }`}
+                >
+                    {flyerPreview ? (
+                        <div className="relative">
+                            <img
+                                src={flyerPreview}
+                                alt="Flyer preview"
+                                className="max-h-64 mx-auto rounded-lg"
+                            />
+                            <button
+                                onClick={() => { setFlyerPreview(null); setFlyerFile(null); }}
+                                className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                            >
+                                <FaTimes className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="text-center">
+                            <FaImage className="w-12 h-12 text-stone-600 mx-auto mb-4" />
+                            <p className="text-stone-400 mb-2">
+                                Arrastrá el flyer acá o{" "}
+                                <label className="text-bargoglio-orange cursor-pointer hover:underline">
+                                    buscá en tu computadora
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileSelect}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </p>
+                            <p className="text-stone-600 text-sm">PNG, JPG hasta 5MB</p>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {/* Submit */}
+            <div className="flex justify-end gap-4">
+                <Link
+                    href="/admin/shows"
+                    className="px-6 py-3 bg-stone-800 text-stone-300 rounded-lg font-medium hover:bg-stone-700 transition-colors"
+                >
+                    Cancelar
+                </Link>
+                <button
+                    onClick={handleSubmit}
+                    disabled={saving}
+                    className="px-6 py-3 bg-bargoglio-orange text-white rounded-lg font-medium hover:bg-bargoglio-orange/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                    {saving ? (
+                        <>
+                            <FaSpinner className="w-4 h-4 animate-spin" />
+                            Guardando...
+                        </>
+                    ) : (
+                        'Publicar Show'
+                    )}
+                </button>
+            </div>
         </div>
+        </div >
     );
 }

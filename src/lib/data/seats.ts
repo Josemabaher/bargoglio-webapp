@@ -76,16 +76,7 @@ export const INITIAL_SEATS: Partial<Seat>[] = [
     { id: "Z3-8-1", tableId: "Z3-8", tableNumber: 33, status: "available", x: 95.39, y: 30.85, label: "Zona 3", price: 3000 },
     { id: "Z3-8-2", tableId: "Z3-8", tableNumber: 32, status: "available", x: 89.56, y: 31.11, label: "Zona 3", price: 3000 },
 
-    // ZONA 4 ($2000)
-    { id: "Z4-1-1", tableId: "Z4-1", tableNumber: 35, status: "available", x: 56.5, y: 9.22, label: "Zona 4", price: 2000 },
-    { id: "Z4-1-2", tableId: "Z4-1", tableNumber: 34, status: "available", x: 7.57, y: 10.62, label: "Zona 4", price: 2000 },
-    { id: "Z4-1-3", tableId: "Z4-1", tableNumber: 34, status: "available", x: 11.87, y: 10.62, label: "Zona 4", price: 2000 },
-    { id: "Z4-2-1", tableId: "Z4-2", tableNumber: 37, status: "available", x: 82.75, y: 8.96, label: "Zona 4", price: 2000 },
-    { id: "Z4-2-2", tableId: "Z4-2", tableNumber: 36, status: "available", x: 72.54, y: 9.22, label: "Zona 4", price: 2000 },
-    { id: "Z4-2-3", tableId: "Z4-2", tableNumber: 35, status: "available", x: 62.5, y: 8.96, label: "Zona 4", price: 2000 },
-    { id: "Z4-3-1", tableId: "Z4-3", tableNumber: 34, status: "available", x: 7.57, y: 16.9, label: "Zona 4", price: 2000 },
-    { id: "Z4-3-2", tableId: "Z4-3", tableNumber: 37, status: "available", x: 76.93, y: 8.96, label: "Zona 4", price: 2000 },
-    { id: "Z4-3-3", tableId: "Z4-3", tableNumber: 36, status: "available", x: 66.71, y: 9.22, label: "Zona 4", price: 2000 }
+    { id: "Z3-8-2", tableId: "Z3-8", tableNumber: 32, status: "available", x: 89.56, y: 31.11, label: "Zona 3", price: 3000 }
 ];
 
 export const getSeatDefinition = (seatId: string) => {

@@ -32,12 +32,12 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
         if (!price) return "transparent";
         if (price >= 5000) return "rgba(212, 175, 55, 0.1)"; // Gold - VIP
         if (price >= 4000) return "rgba(168, 85, 247, 0.1)"; // Purple - Premium
-        if (price >= 3000) return "rgba(59, 130, 246, 0.1)"; // Blue - General
-        return "rgba(148, 163, 184, 0.1)"; // Gray - Bar
+        if (price >= 3000) return "rgba(59, 130, 246, 0.1)"; // Blue - Zona 3
+        return "rgba(148, 163, 184, 0.1)"; // Gray - Default
     };
 
     return (
-        <div className="w-full aspect-[1000/700] relative bg-charcoal-900 rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
+        <div className="w-full aspect-[1000/700] relative bg-charcoal-900 rounded-2xl border border-white/5 overflow-hidden shadow-2xl touch-none">
             {/* Header and Legend removed - moved to parent component */}
 
             <TransformWrapper
@@ -68,7 +68,7 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
                                 {/* Background Image */}
                                 <div className="absolute inset-0">
                                     <Image
-                                        src="/mapa-planta.jpg"
+                                        src="/Plano Mesas Bargoglio.jpg"
                                         alt="Floor Plan"
                                         fill
                                         className="object-contain opacity-80"
