@@ -25,15 +25,12 @@ export default function AdminTableMap({ seats, onSeatClick }: AdminTableMapProps
     const getSeatColor = (status: string, label?: string) => {
         switch (status) {
             case "occupied":
-                return "bg-stone-700 border-stone-500 opacity-80 cursor-not-allowed"; // Standard occupied style
+                return "bg-red-600 border-red-400 opacity-80 cursor-not-allowed"; // Red for occupied
             case "reserved":
-                return "bg-amber-700 border-amber-500 opacity-80 cursor-not-allowed";
+                return "bg-red-600 border-red-400 opacity-80 cursor-not-allowed"; // Red for reserved too (as per "Occupied = Red")
             case "available":
             default:
-                if (label === "Area Azul") return "bg-blue-600 border-blue-400";
-                if (label === "Area Roja") return "bg-red-600 border-red-400";
-                if (label === "Area Amarilla") return "bg-yellow-500 border-yellow-300 text-black";
-                return "bg-green-600 border-green-400";
+                return "bg-green-600 border-green-400 text-white"; // Green for available
         }
     };
 

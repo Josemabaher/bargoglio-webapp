@@ -23,12 +23,7 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
         if (seat.status === 'reserved') return "bg-red-900/80 text-white border-red-950 cursor-not-allowed";
         if (selectedSeatIds.includes(seat.id)) return "bg-yellow-500 text-black border-yellow-300 shadow-[0_0_15px_rgba(255,215,0,0.8)] z-50 scale-150 ring-2 ring-yellow-200";
 
-        // Available - Zone based coloring
-        if (seat.label === "Area Azul") return "bg-blue-600/90 text-white border-blue-400/50 hover:bg-blue-500 hover:scale-125 hover:z-40 hover:shadow-lg transition-all duration-200";
-        if (seat.label === "Area Roja") return "bg-red-600/90 text-white border-red-400/50 hover:bg-red-500 hover:scale-125 hover:z-40 hover:shadow-lg transition-all duration-200";
-        if (seat.label === "Area Amarilla") return "bg-yellow-500/90 text-black border-yellow-300/50 hover:bg-yellow-400 hover:scale-125 hover:z-40 hover:shadow-lg transition-all duration-200";
-
-        // Default (Green)
+        // Available - Always Green
         return "bg-green-600/90 text-white border-green-400/50 hover:bg-green-500 hover:scale-125 hover:z-40 hover:shadow-lg transition-all duration-200";
     };
 
