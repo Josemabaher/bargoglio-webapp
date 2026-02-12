@@ -433,5 +433,6 @@ export default function NewShowPage() {
                     </button>
                 </div>
             </div>
-            );
+        </div>
+    );
 }
