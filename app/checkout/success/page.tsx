@@ -9,7 +9,7 @@ function SuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const paymentId = searchParams.get("payment_id");
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const [countdown, setCountdown] = useState(3);
 

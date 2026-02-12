@@ -41,8 +41,8 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
             {/* Header and Legend removed - moved to parent component */}
 
             <TransformWrapper
-                initialScale={0.5}
-                minScale={0.2}
+                initialScale={1}
+                minScale={0.5}
                 maxScale={4}
                 centerOnInit
                 wheel={{ step: 0.1 }}
@@ -63,7 +63,7 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
                         </div>
 
                         <TransformComponent wrapperClass="!w-full !h-full" contentStyle={{ width: "100%", height: "100%" }}>
-                            <div className="relative w-[1000px] h-[700px] bg-[#1a1a1a]"> {/* Fixed size for coordinate system */}
+                            <div className="relative w-full h-full bg-[#1a1a1a]"> {/* Responsive size */}
 
                                 {/* Background Image */}
                                 <div className="absolute inset-0">
