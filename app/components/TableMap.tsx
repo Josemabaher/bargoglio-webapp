@@ -37,7 +37,7 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
     };
 
     return (
-        <div className="w-full aspect-[1000/700] relative bg-charcoal-900 rounded-2xl border border-white/5 overflow-hidden shadow-2xl touch-none">
+        <div className="w-full max-w-[100vw] aspect-[1000/700] relative bg-charcoal-900 rounded-2xl border border-white/5 overflow-hidden shadow-2xl touch-none mx-auto">
             {/* Header and Legend removed - moved to parent component */}
 
             <TransformWrapper

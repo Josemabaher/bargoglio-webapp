@@ -28,7 +28,7 @@ export interface Event {
     date: string; // ISO date string
     time: string;
     zonesPrices: ZonePrice[];
-    precios_por_zona: number[]; // [zona1, zona2, zona3, zona4] prices
+    precios_por_zona: number[]; // [zona1, zona2, zona3] prices
     seats?: Seat[]; // Array of all seats for this event (snapshot or reference)
     isActive: boolean;
     menuPdfUrl?: string; // URL to menu PDF in Cloudinary

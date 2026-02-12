@@ -21,7 +21,8 @@ function SuccessContent() {
 
         // Redirect after 3 seconds
         const timeout = setTimeout(() => {
-            router.push("/?success=true");
+            // Use window.location for a hard redirect if router.push fails or for analytics compatibility
+            window.location.href = "/?success=true";
         }, 3000);
 
         return () => {
@@ -69,7 +70,7 @@ function SuccessContent() {
                                 <FaTicketAlt /> Ver Mis Entradas
                             </button>
                             <button
-                                onClick={() => router.push("/?success=true")}
+                                onClick={() => window.location.href = "/?success=true"}
                                 className="w-full py-3 bg-transparent hover:bg-white/5 text-stone-400 hover:text-white font-bold uppercase tracking-widest text-sm rounded transition-all flex items-center justify-center gap-2"
                             >
                                 <FaHome /> Volver al Inicio

@@ -259,12 +259,14 @@ export default function EventPage() {
                                     {/* Zone Prices Display */}
                                     {event.zonesPrices && event.zonesPrices.length > 0 && (
                                         <div className="flex flex-wrap gap-3">
-                                            {event.zonesPrices.map((zp: any, idx: number) => (
-                                                <div key={idx} className="bg-white/5 border border-white/10 px-4 py-2 rounded-lg flex items-center gap-2">
-                                                    <span className="text-stone-400 text-sm font-bold uppercase tracking-wider">{zp.zone || zp.zoneName}:</span>
-                                                    <span className="text-gold-400 font-bold text-lg">${zp.price.toLocaleString()}</span>
-                                                </div>
-                                            ))}
+                                            {event.zonesPrices
+                                                .filter((zp: any) => (zp.zone || zp.zoneName) !== 'Zona 4')
+                                                .map((zp: any, idx: number) => (
+                                                    <div key={idx} className="bg-white/5 border border-white/10 px-4 py-2 rounded-lg flex items-center gap-2">
+                                                        <span className="text-stone-400 text-sm font-bold uppercase tracking-wider">{zp.zone || zp.zoneName}:</span>
+                                                        <span className="text-gold-400 font-bold text-lg">${zp.price.toLocaleString()}</span>
+                                                    </div>
+                                                ))}
                                         </div>
                                     )}
                                 </div>

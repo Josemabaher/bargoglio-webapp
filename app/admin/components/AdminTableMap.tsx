@@ -67,7 +67,7 @@ export default function AdminTableMap({ seats, onSeatClick }: AdminTableMapProps
         <div className="relative w-full aspect-[1000/700] bg-[#1a1a1a] border border-stone-800/50 rounded-xl overflow-hidden">
             {/* Floor Plan Image */}
             <Image
-                src="/mapa-planta.jpg"
+                src="/Plano Mesas Bargoglio.jpg"
                 alt="Plano del local"
                 fill
                 className="object-contain opacity-80"
