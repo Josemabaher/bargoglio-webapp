@@ -13,9 +13,9 @@ import { INITIAL_SEATS } from "@/src/lib/data/seats";
 // Get price for seat based on label
 function getPriceForSeat(label: string, prices: { zona1: number; zona2: number; zona3: number }) {
     switch (label) {
-        case "Zona 1": return prices.zona1;
-        case "Zona 2": return prices.zona2;
-        case "Zona 3": return prices.zona3;
+        case "Area Azul": return prices.zona1;
+        case "Area Roja": return prices.zona2;
+        case "Area Amarilla": return prices.zona3;
         default: return prices.zona3;
     }
 }
@@ -128,9 +128,9 @@ export default function NewShowPage() {
                 flyerUrl: flyerUrl,
                 isActive: true,
                 zonesPrices: [
-                    { zone: "Zona 1", price: prices.zona1 },
-                    { zone: "Zona 2", price: prices.zona2 },
-                    { zone: "Zona 3", price: prices.zona3 },
+                    { zone: "Area Azul", price: prices.zona1 },
+                    { zone: "Area Roja", price: prices.zona2 },
+                    { zone: "Area Amarilla", price: prices.zona3 },
                 ],
                 createdAt: Timestamp.now(),
                 category: formData.category,
@@ -315,9 +315,9 @@ export default function NewShowPage() {
                     {formData.pricingType === 'zones' && (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in">
                             {[
-                                { key: "zona1Price", label: "Zona 1 (VIP)", color: "border-yellow-500/50" },
-                                { key: "zona2Price", label: "Zona 2 (Premium)", color: "border-purple-500/50" },
-                                { key: "zona3Price", label: "Zona 3 (General)", color: "border-blue-500/50" },
+                                { key: "zona1Price", label: "Area Azul (VIP)", color: "border-blue-500/50" },
+                                { key: "zona2Price", label: "Area Roja (Premium)", color: "border-red-500/50" },
+                                { key: "zona3Price", label: "Area Amarilla (General)", color: "border-yellow-500/50" },
                             ].map((zone) => (
                                 <div key={zone.key}>
                                     <label className="block text-xs font-medium text-stone-500 mb-2">{zone.label}</label>

@@ -153,9 +153,9 @@ export default function EditShowPage() {
                 pricingType: formData.pricingType,
                 generalPrice: formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0,
                 zonesPrices: [
-                    { zone: "Zona 1", price: formData.pricingType === 'zones' ? parseInt(formData.zona1Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0) },
-                    { zone: "Zona 2", price: formData.pricingType === 'zones' ? parseInt(formData.zona2Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0) },
-                    { zone: "Zona 3", price: formData.pricingType === 'zones' ? parseInt(formData.zona3Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0) },
+                    { zone: "Area Azul", price: formData.pricingType === 'zones' ? parseInt(formData.zona1Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0) },
+                    { zone: "Area Roja", price: formData.pricingType === 'zones' ? parseInt(formData.zona2Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0) },
+                    { zone: "Area Amarilla", price: formData.pricingType === 'zones' ? parseInt(formData.zona3Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0) },
                 ],
             });
 
@@ -326,9 +326,9 @@ export default function EditShowPage() {
                     {formData.pricingType === 'zones' && (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in">
                             {[
-                                { key: "zona1Price", label: "Zona 1 (VIP)", color: "border-yellow-500/50" },
-                                { key: "zona2Price", label: "Zona 2 (Premium)", color: "border-purple-500/50" },
-                                { key: "zona3Price", label: "Zona 3 (General)", color: "border-blue-500/50" },
+                                { key: "zona1Price", label: "Area Azul (VIP)", color: "border-blue-500/50" },
+                                { key: "zona2Price", label: "Area Roja (Premium)", color: "border-red-500/50" },
+                                { key: "zona3Price", label: "Area Amarilla (General)", color: "border-yellow-500/50" },
                             ].map((zone) => (
                                 <div key={zone.key}>
                                     <label className="block text-xs font-medium text-stone-500 mb-2">{zone.label}</label>

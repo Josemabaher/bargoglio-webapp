@@ -2,25 +2,6 @@ import { Seat } from "@/src/types";
 
 // Calibrated data from user (FINAL)
 export const INITIAL_SEATS: Partial<Seat>[] = [
-    // ZONA 1 ($5000) - Calibrado para aspect-ratio 1000/700
-    { id: "Z1-1-1", tableId: "Z1-1", tableNumber: 2, status: "available", x: 30.6, y: 35.33, label: "Zona 1", price: 5000 },
-    { id: "Z1-1-2", tableId: "Z1-1", tableNumber: 2, status: "available", x: 36.87, y: 35.59, label: "Zona 1", price: 5000 },
-    { id: "Z1-1-3", tableId: "Z1-1", tableNumber: 3, status: "available", x: 40.37, y: 35.59, label: "Zona 1", price: 5000 },
-    { id: "Z1-1-4", tableId: "Z1-1", tableNumber: 3, status: "available", x: 46.46, y: 35.59, label: "Zona 1", price: 5000 },
-    { id: "Z1-2-1", tableId: "Z1-2", tableNumber: 10, status: "available", x: 54.53, y: 31.23, label: "Zona 1", price: 5000 },
-    { id: "Z1-2-2", tableId: "Z1-2", tableNumber: 10, status: "available", x: 54.61, y: 22.15, label: "Zona 1", price: 5000 },
-    { id: "Z1-2-3", tableId: "Z1-2", tableNumber: 5, status: "available", x: 46.55, y: 42.12, label: "Zona 1", price: 5000 },
-    { id: "Z1-2-4", tableId: "Z1-2", tableNumber: 19, status: "available", x: 60.44, y: 31.11, label: "Zona 2", price: 4000 },
-    { id: "Z1-3-1", tableId: "Z1-3", tableNumber: 7, status: "available", x: 40.37, y: 48.84, label: "Zona 1", price: 5000 },
-    { id: "Z1-3-2", tableId: "Z1-3", tableNumber: 7, status: "available", x: 46.6, y: 48.9, label: "Zona 1", price: 5000 },
-    { id: "Z1-3-3", tableId: "Z1-3", tableNumber: 9, status: "available", x: 40.28, y: 55.17, label: "Zona 1", price: 5000 },
-    { id: "Z1-3-4", tableId: "Z1-3", tableNumber: 9, status: "available", x: 46.55, y: 55.17, label: "Zona 1", price: 5000 },
-    { id: "Z1-4-1", tableId: "Z1-4", tableNumber: 11, status: "available", x: 55.15, y: 47.04, label: "Zona 1", price: 5000 },
-    { id: "Z1-4-2", tableId: "Z1-4", tableNumber: 22, status: "available", x: 63.84, y: 46.6, label: "Zona 2", price: 4000 },
-    { id: "Z1-4-3", tableId: "Z1-4", tableNumber: 11, status: "available", x: 52.37, y: 50.74, label: "Zona 1", price: 5000 },
-    { id: "Z1-4-4", tableId: "Z1-4", tableNumber: 22, status: "available", x: 60.44, y: 50.82, label: "Zona 2", price: 4000 },
-    { id: "Z1-5-1", tableId: "Z1-5", tableNumber: 4, status: "available", x: 30.69, y: 42.12, label: "Zona 1", price: 5000 },
-    { id: "Z1-5-2", tableId: "Z1-5", tableNumber: 5, status: "available", x: 40.37, y: 42.12, label: "Zona 1", price: 5000 },
     { id: "Z1-5-3", tableId: "Z1-5", tableNumber: 8, status: "available", x: 36.87, y: 55.3, label: "Zona 1", price: 5000 },
     { id: "Z1-5-4", tableId: "Z1-5", tableNumber: 6, status: "available", x: 36.96, y: 48.64, label: "Zona 1", price: 5000 },
     { id: "Z1-6-1", tableId: "Z1-6", tableNumber: 4, status: "available", x: 36.96, y: 42.12, label: "Zona 1", price: 5000 },

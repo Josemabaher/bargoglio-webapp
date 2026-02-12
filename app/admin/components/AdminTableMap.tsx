@@ -11,6 +11,7 @@ interface AdminSeat {
     clientName?: string;
     tableNumber?: number;
     price?: number;
+    label?: string; // Added label
 }
 
 interface AdminTableMapProps {
@@ -21,14 +22,17 @@ interface AdminTableMapProps {
 export default function AdminTableMap({ seats, onSeatClick }: AdminTableMapProps) {
     const [hoveredSeat, setHoveredSeat] = useState<AdminSeat | null>(null);
 
-    const getSeatColor = (status: string) => {
+    const getSeatColor = (status: string, label?: string) => {
         switch (status) {
             case "occupied":
-                return "bg-red-600 border-red-400";
+                return "bg-stone-700 border-stone-500 opacity-80 cursor-not-allowed"; // Standard occupied style
             case "reserved":
-                return "bg-yellow-600 border-yellow-400";
+                return "bg-amber-700 border-amber-500 opacity-80 cursor-not-allowed";
             case "available":
             default:
+                if (label === "Area Azul") return "bg-blue-600 border-blue-400";
+                if (label === "Area Roja") return "bg-red-600 border-red-400";
+                if (label === "Area Amarilla") return "bg-yellow-500 border-yellow-300 text-black";
                 return "bg-green-600 border-green-400";
         }
     };
@@ -91,7 +95,7 @@ export default function AdminTableMap({ seats, onSeatClick }: AdminTableMapProps
                             absolute -translate-x-1/2 -translate-y-1/2
                             w-6 h-6 rounded-full border-2 cursor-pointer
                             transition-transform duration-200 hover:scale-150 hover:z-50
-                            ${getSeatColor(seat.status)}
+                            ${getSeatColor(seat.status, seat.label)}
                         `}
                     >
                         {/* Tooltip */}

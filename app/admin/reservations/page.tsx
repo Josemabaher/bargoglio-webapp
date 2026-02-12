@@ -178,6 +178,7 @@ function ReservationsContent() {
         status: seat.status as "available" | "occupied" | "reserved",
         tableNumber: seat.tableNumber,
         price: seat.price,
+        label: seat.label, // Pass label
         // Only show client name if seat is occupied or reserved
         clientName: seat.status !== "available" ? seatToCustomer[seat.id] : undefined,
     }));
