@@ -94,8 +94,8 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
                                             style={{
                                                 left: `${seat.x}%`,
                                                 top: `${seat.y}%`,
-                                                width: '26px',
-                                                height: '26px',
+                                                width: '2.6%', // 26px / 1000px
+                                                height: '3.7%', // 26px / 700px
                                             }}
                                             className={`
                                                 absolute -translate-x-1/2 -translate-y-1/2
