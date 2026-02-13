@@ -78,6 +78,23 @@ export default function CalibrationPage() {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Calibración de Asientos</h1>
                 <div className="flex gap-4">
+                    <button onClick={async () => {
+                        if (confirm("¿Actualizar mapas de eventos antiguos? Esto borrará las sillas viejas y pondrá las nuevas, manteniendo las ocupadas.")) {
+                            try {
+                                const res = await fetch('/api/admin/migrate-seats');
+                                const data = await res.json();
+                                if (data.success) {
+                                    alert(`Migración exitosa: ${data.message}`);
+                                } else {
+                                    alert(`Error: ${data.error}`);
+                                }
+                            } catch (e) {
+                                alert("Error de conexión");
+                            }
+                        }
+                    }} className="px-4 py-2 bg-purple-600 rounded flex items-center gap-2 hover:bg-purple-500 transition-colors">
+                        <FaSave /> Actualizar Eventos Antiguos
+                    </button>
                     <button onClick={handleAddSeat} className="px-4 py-2 bg-green-600 rounded flex items-center gap-2">
                         <FaPlus /> Agregar Silla
                     </button>
