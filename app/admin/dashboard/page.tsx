@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { FaCalendarAlt, FaGift, FaUsers, FaCog, FaPlus } from 'react-icons/fa';
 import Link from 'next/link';
 import { db } from '@/src/lib/firebase/config';
+import { INITIAL_SEATS } from "@/src/lib/data/seats";
 import { collection, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { formatDate } from "@/src/lib/utils/format";
 import { UserProfile } from "@/src/types";
@@ -199,9 +200,14 @@ export default function DashboardPage() {
                                 {todayShow ? 'Reservas para hoy' : 'Consulta próximos eventos abajo'}
                             </p>
                             {todayShow && (
-                                <p className="text-4xl font-bold text-white mt-2">
-                                    {loading ? '...' : todayShow.reservations}
-                                </p>
+                                <div>
+                                    <p className="text-4xl font-bold text-white mt-2">
+                                        {loading ? '...' : todayShow.reservations} <span className="text-stone-500 text-lg font-normal">/ {INITIAL_SEATS.length}</span>
+                                    </p>
+                                    <p className="text-stone-500 text-xs mt-1">
+                                        Libres: <span className="text-green-500 font-bold">{INITIAL_SEATS.length - todayShow.reservations}</span>
+                                    </p>
+                                </div>
                             )}
                         </div>
                         <div className="bg-bargoglio-orange p-3 rounded-lg">
