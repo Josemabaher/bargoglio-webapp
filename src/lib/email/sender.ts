@@ -1,10 +1,19 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
+import { ReservationDetails } from '@/src/types'; // Assuming types are exported centrally, or redefine locally if needed.
 import QRCode from 'qrcode';
-import { formatDate } from '../utils/format';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create a transporter object using the default SMTP transport
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 465,
+    secure: true, // true for 465, false for other ports
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+});
 
-interface ReservationDetails {
+interface LocalReservationDetails {
     id: string;
     eventName: string;
     date: string; // ISO date string e.g. "2026-02-15"
@@ -16,7 +25,7 @@ interface ReservationDetails {
 /**
  * Generate Google Calendar URL
  */
-function generateGoogleCalendarUrl(details: ReservationDetails): string {
+function generateGoogleCalendarUrl(details: LocalReservationDetails): string {
     const startDate = new Date(`${details.date}T${details.time || '22:00'}:00`);
     const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000); // +4 hours
 
@@ -36,7 +45,7 @@ function generateGoogleCalendarUrl(details: ReservationDetails): string {
 /**
  * Generate Apple Calendar (.ics) data URL
  */
-function generateAppleCalendarUrl(details: ReservationDetails): string {
+function generateAppleCalendarUrl(details: LocalReservationDetails): string {
     const startDate = new Date(`${details.date}T${details.time || '22:00'}:00`);
     const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
 
@@ -61,7 +70,13 @@ END:VCALENDAR`;
     return `data:text/calendar;base64,${base64}`;
 }
 
-export async function sendTicketEmail(to: string, reservationDetails: ReservationDetails) {
+const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('es-AR', { dateStyle: 'long' }).format(date);
+};
+
+
+export async function sendTicketEmail(to: string, reservationDetails: LocalReservationDetails) {
     // 1. Generate QR
     const qrDataURL = await QRCode.toDataURL(reservationDetails.id);
 
@@ -71,10 +86,10 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
 
     // 3. Send Email with improved design
     try {
-        await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'Bargoglio <onboarding@resend.dev>',
-            to: [to],
-            subject: `Tus entradas para ${reservationDetails.eventName} en Bargoglio`,
+        const info = await transporter.sendMail({
+            from: `"Bargoglio Club" <${process.env.SMTP_USER}>`, // sender address
+            to: to, // list of receivers
+            subject: `Tus entradas para ${reservationDetails.eventName} en Bargoglio`, // Subject line
             html: `
 <!DOCTYPE html>
 <html>
@@ -158,9 +173,10 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
     </div>
 </body>
 </html>
-            `
+            `,
         });
-        console.log("[Email] Ticket sent successfully to:", to);
+
+        console.log("[Email] Ticket sent successfully to:", to, "Message ID:", info.messageId);
         return true;
     } catch (error) {
         console.error("[Email] Error sending ticket:", error);
@@ -170,9 +186,9 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
 
 export async function sendWelcomeEmail(to: string, name: string, resetLink: string) {
     try {
-        await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'Bargoglio <onboarding@resend.dev>',
-            to: [to],
+        const info = await transporter.sendMail({
+            from: `"Bargoglio Club" <${process.env.SMTP_USER}>`,
+            to: to,
             subject: `Bienvenido a Bargoglio - Crea tu contraseña`,
             html: `
 <!DOCTYPE html>
@@ -199,7 +215,7 @@ export async function sendWelcomeEmail(to: string, name: string, resetLink: stri
 </html>
             `
         });
-        console.log("[Email] Welcome email sent to:", to);
+        console.log("[Email] Welcome email sent to:", to, "Message ID:", info.messageId);
     } catch (error) {
         console.error("[Email] Error sending welcome email:", error);
     }
