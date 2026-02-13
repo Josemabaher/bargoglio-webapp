@@ -40,11 +40,12 @@ export default function DashboardPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Get today's date normalized to midnight
+                // Get today's date normalized to midnight LOCAL TIME
                 const today = new Date();
-                today.setHours(0, 0, 0, 0); // Normalize today
-
-                const todayStr = today.toISOString().split('T')[0];
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
 
                 // Fetch all events
                 const eventsRef = collection(db, 'events');
@@ -184,7 +185,7 @@ export default function DashboardPage() {
             {/* Header */}
             <div>
                 <h1 className="text-3xl font-serif font-bold text-white">Dashboard</h1>
-                <p className="text-stone-500 mt-1">Bienvenido al panel de administración de Bargoglio.</p>
+                <p className="text-stone-500 mt-1">Bienvenido al panel de administración de Bargoglio. <span className="text-xs text-stone-700 ml-2">(v2.1 - Calib Updated)</span></p>
             </div>
 
             {/* Top Stats Cards - 2 columns */}
