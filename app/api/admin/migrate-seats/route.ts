@@ -3,26 +3,54 @@ import { db } from '@/src/lib/firebase/config';
 import { collection, getDocs, doc, writeBatch, query, where } from 'firebase/firestore';
 import { INITIAL_SEATS } from '@/src/lib/data/seats';
 
+// Helper to determine price based on label and event config
+function getPriceForSeat(label: string | undefined, eventData: any): number {
+    if (!label) return 0;
+
+    // Check pricing type
+    if (eventData.pricingType === 'general') {
+        return Number(eventData.generalPrice) || 0;
+    }
+
+    if (eventData.pricingType === 'free') {
+        return 0;
+    }
+
+    if (eventData.pricingType === 'zones' && eventData.zonesPrices) {
+        // Find matching zone
+        const zoneConfig = eventData.zonesPrices.find((z: any) => z.zone === label);
+        if (zoneConfig) return Number(zoneConfig.price) || 0;
+    }
+
+    // Fallback if no config matches (legacy data structure support)
+    return 0;
+}
+
 // Migration script to update seats for existing events
 export async function GET() {
     try {
         console.log("Starting seat migration...");
 
-        // 1. Get all events that use zones
+        // 1. Get all events that use zones (or all events to be safe and update map)
         const eventsRef = collection(db, 'events');
-        // We might want to filter, but easier to get all and check pricingType in memory or query
-        const q = query(eventsRef, where('pricingType', '==', 'zones'));
-        const eventsSnapshot = await getDocs(q);
+        // We migrate ALL events to ensure map is updated everywhere.
+        const eventsSnapshot = await getDocs(eventsRef);
 
         const results = [];
         const totalEvents = eventsSnapshot.size;
-        console.log(`Found ${totalEvents} zone events to migrate.`);
+        console.log(`Found ${totalEvents} events to migrate.`);
 
         // 2. Iterate through events
         for (const eventDoc of eventsSnapshot.docs) {
             const eventId = eventDoc.id;
             const eventData = eventDoc.data();
             console.log(`Processing event: ${eventData.name || eventData.title} (${eventId})`);
+
+            // Only migrate if it has a seating capability (pricingType exists)
+            if (!eventData.pricingType) {
+                console.log(`Skipping event ${eventId} (unknown pricing type)`);
+                continue;
+            }
 
             // 3. Get existing seats
             const seatsRef = collection(db, 'events', eventId, 'seats');
@@ -38,9 +66,6 @@ export async function GET() {
             });
 
             // 5. Batch writes (Delete old, Create new)
-            // Firestore batch limit is 500 ops.
-            // We have ~70 seats to delete + ~70 to add = ~140 ops per event.
-            // One batch per event is safe.
             const batch = writeBatch(db);
 
             // Delete existing
@@ -54,16 +79,18 @@ export async function GET() {
 
                 // Check preserved status
                 const preservedStatus = seatStatusMap.get(seat.id);
-                // If the seat ID exists in the map, use that status. Otherwise default to 'available'.
                 const finalStatus = preservedStatus || 'available';
+
+                // Calculate dynamic price
+                const finalPrice = getPriceForSeat(seat.label, eventData);
 
                 const newSeatRef = doc(collection(db, 'events', eventId, 'seats'), seat.id);
                 batch.set(newSeatRef, {
                     ...seat,
                     status: finalStatus,
-                    // Ensure tableNumber is number
+                    price: finalPrice,
+                    // Ensure numeric types
                     tableNumber: Number(seat.tableNumber) || 0,
-                    price: Number(seat.price) || 0,
                     x: Number(seat.x),
                     y: Number(seat.y)
                 });
