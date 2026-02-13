@@ -1,6 +1,16 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create a transporter object using the default SMTP transport
+// Reuse the configuration from environment variables
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 465,
+    secure: true, // true for 465, false for other ports
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+});
 
 interface BirthdayEmailData {
     to: string;
@@ -9,9 +19,9 @@ interface BirthdayEmailData {
 
 export async function sendBirthdayEmail({ to, userName }: BirthdayEmailData) {
     try {
-        await resend.emails.send({
-            from: 'Bargoglio <saludos@bargoglio.com>',
-            to: [to],
+        const info = await transporter.sendMail({
+            from: `"Bargoglio Club" <${process.env.SMTP_USER}>`,
+            to: to,
             subject: `🎂 ¡Feliz Cumpleaños, ${userName}! - Bargoglio Club`,
             html: `
 <!DOCTYPE html>
@@ -73,9 +83,10 @@ export async function sendBirthdayEmail({ to, userName }: BirthdayEmailData) {
     </div>
 </body>
 </html>
-            `
+            `,
         });
-        console.log("[Birthday Email] Sent to:", to);
+
+        console.log("[Birthday Email] Sent to:", to, "Message ID:", info.messageId);
         return true;
     } catch (error) {
         console.error("[Birthday Email] Error:", error);
