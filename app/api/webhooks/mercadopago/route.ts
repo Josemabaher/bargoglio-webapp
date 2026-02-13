@@ -141,7 +141,22 @@ export async function POST(req: NextRequest) {
                 // 3. POINTS & STATS
                 // ==========================
                 const amount = paymentData.transaction_amount || 0;
-                const points = Math.floor(amount / 1000);
+
+                // Fetch dynamic points setting
+                let pointsRatio = 1000; // Default
+                try {
+                    const settingsDoc = await adminDb.collection('settings').doc('general').get();
+                    if (settingsDoc.exists) {
+                        const sData = settingsDoc.data();
+                        if (sData?.pesosPerPoint) {
+                            pointsRatio = Number(sData.pesosPerPoint);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error fetching points settings:", e);
+                }
+
+                const points = Math.floor(amount / pointsRatio);
 
                 if (user_id && user_id !== 'guest_unknown') {
                     const userRef = adminDb.collection('users').doc(user_id);
