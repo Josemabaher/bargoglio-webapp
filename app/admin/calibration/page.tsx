@@ -95,7 +95,7 @@ export default function CalibrationPage() {
                         className="relative w-full aspect-[1000/700] bg-charcoal-900 border border-white/10 rounded-xl overflow-hidden cursor-crosshair"
                     >
                         <Image
-                            src="/Plano Mesas Bargoglio.jpg"
+                            src="/Plano Mesas Bargoglio.jpg?v=2"
                             alt="Plano"
                             fill
                             className="object-contain opacity-70 pointer-events-none"

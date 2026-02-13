@@ -67,7 +67,7 @@ export default function TableMap({ seats, selectedSeatIds, onToggleSeat }: Table
                                 {/* Background Image */}
                                 <div className="absolute inset-0">
                                     <Image
-                                        src="/Plano Mesas Bargoglio.jpg"
+                                        src="/Plano Mesas Bargoglio.jpg?v=2"
                                         alt="Floor Plan"
                                         fill
                                         className="object-contain opacity-80"
