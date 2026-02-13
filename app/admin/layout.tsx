@@ -11,6 +11,7 @@ const navItems = [
     { name: "Clientes", href: "/admin/crm", icon: FaUsers },
     { name: "Puntos", href: "/admin/points", icon: FaStar },
     { name: "Reservas", href: "/admin/reservations", icon: FaMap },
+    { name: "Calibración", href: "/admin/calibration", icon: FaCog },
 ];
 
 import { useAuth } from "@/src/lib/context/AuthContext";
