@@ -85,3 +85,11 @@ export interface GuestUser {
     provincia: string;
 }
 
+export interface ReservationDetails {
+    id: string;
+    eventName: string;
+    date: string; // ISO date string e.g. "2026-02-15"
+    time: string; // e.g. "22:00"
+    seats: string[];
+    userEmail?: string;
+}

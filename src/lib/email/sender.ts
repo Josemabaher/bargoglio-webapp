@@ -13,19 +13,10 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-interface LocalReservationDetails {
-    id: string;
-    eventName: string;
-    date: string; // ISO date string e.g. "2026-02-15"
-    time: string; // e.g. "22:00"
-    seats: string[];
-    userEmail?: string;
-}
-
 /**
  * Generate Google Calendar URL
  */
-function generateGoogleCalendarUrl(details: LocalReservationDetails): string {
+function generateGoogleCalendarUrl(details: ReservationDetails): string {
     const startDate = new Date(`${details.date}T${details.time || '22:00'}:00`);
     const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000); // +4 hours
 
@@ -45,7 +36,7 @@ function generateGoogleCalendarUrl(details: LocalReservationDetails): string {
 /**
  * Generate Apple Calendar (.ics) data URL
  */
-function generateAppleCalendarUrl(details: LocalReservationDetails): string {
+function generateAppleCalendarUrl(details: ReservationDetails): string {
     const startDate = new Date(`${details.date}T${details.time || '22:00'}:00`);
     const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
 
@@ -76,7 +67,7 @@ const formatDate = (dateString: string) => {
 };
 
 
-export async function sendTicketEmail(to: string, reservationDetails: LocalReservationDetails) {
+export async function sendTicketEmail(to: string, reservationDetails: ReservationDetails) {
     // 1. Generate QR
     const qrDataURL = await QRCode.toDataURL(reservationDetails.id);
 
