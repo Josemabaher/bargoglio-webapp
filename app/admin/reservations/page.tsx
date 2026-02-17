@@ -21,6 +21,7 @@ interface Reservation {
     seatIds: string[];
     userName?: string;
     userEmail?: string;
+    userId?: string;
     status: string;
     checkedIn?: boolean;
 }
@@ -114,6 +115,7 @@ function ReservationsContent() {
                     seatIds: Data.seatIds || [],
                     userName: Data.userName || userMap[Data.userId] || Data.userEmail || "Cliente",
                     userEmail: Data.userEmail,
+                    userId: Data.userId, // Added userId
                     status: Data.status,
                     checkedIn: Data.checkedIn || false,
                 }));
@@ -137,17 +139,21 @@ function ReservationsContent() {
         setIsModalOpen(true);
     };
 
-    // Toggle check-in status
-    const toggleCheckIn = async (reservationId: string, currentStatus: boolean) => {
+    // Toggle check-in status (Modified to handle multiple IDs)
+    const toggleCheckIn = async (reservationIds: string[], targetStatus: boolean) => {
         try {
-            const reservationRef = doc(db, "reservations", reservationId);
-            await updateDoc(reservationRef, {
-                checkedIn: !currentStatus,
-            });
+            // Update all documents in parallel
+            await Promise.all(reservationIds.map(id => {
+                const reservationRef = doc(db, "reservations", id);
+                return updateDoc(reservationRef, {
+                    checkedIn: targetStatus,
+                });
+            }));
+
             // Update local state
             setReservations((prev) =>
                 prev.map((r) =>
-                    r.id === reservationId ? { ...r, checkedIn: !currentStatus } : r
+                    reservationIds.includes(r.id) ? { ...r, checkedIn: targetStatus } : r
                 )
             );
         } catch (err) {
@@ -190,9 +196,46 @@ function ReservationsContent() {
     const reserved = adminSeats.filter((s) => s.status === "reserved").length;
 
 
-    // Separate reservations by status
-    const confirmedReservations = reservations.filter((r) => r.status === "confirmed");
-    const pendingReservations = reservations.filter((r) => r.status === "pending");
+    // Helper to group reservations by User
+    const groupReservations = (list: Reservation[]) => {
+        const groups: Record<string, {
+            id: string; // Use first ID as key
+            reservationIds: string[];
+            seatIds: string[];
+            userName: string;
+            userEmail?: string;
+            checkedInCount: number;
+        }> = {};
+
+        list.forEach(r => {
+            // Key: prefer userId, then email, then name.
+            // If Guest has no email, fallback to name (risk of collision but low for guest w/o email)
+            const key = r.userId && r.userId !== 'guest_unknown' ? r.userId : (r.userEmail || r.userName || r.id);
+
+            if (!groups[key]) {
+                groups[key] = {
+                    id: r.id,
+                    reservationIds: [],
+                    seatIds: [],
+                    userName: r.userName || "Cliente",
+                    userEmail: r.userEmail,
+                    checkedInCount: 0
+                };
+            }
+            groups[key].reservationIds.push(r.id);
+            groups[key].seatIds.push(...r.seatIds);
+            if (r.checkedIn) groups[key].checkedInCount++;
+        });
+
+        return Object.values(groups);
+    };
+
+    // Separate and GROUP reservations by status
+    const confirmedList = reservations.filter((r) => r.status === "confirmed");
+    const pendingList = reservations.filter((r) => r.status === "pending");
+
+    const confirmedGroups = groupReservations(confirmedList);
+    const pendingGroups = groupReservations(pendingList);
 
     // Get table numbers for a reservation
     const getTableNumbers = (seatIds: string[]): string => {
@@ -301,90 +344,100 @@ function ReservationsContent() {
                 />
             )}
 
-            {/* Attendee Lists */}
+            {/* Attendee Lists (GROUPED) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Confirmed (Paid) - corresponds to occupied seats */}
+                {/* Confirmed (Paid) */}
                 <div className="bg-[#1a1a1a] border border-stone-800/50 rounded-xl overflow-hidden">
                     <div className="px-6 py-4 border-b border-stone-800/50 flex items-center gap-3">
                         <span className="w-3 h-3 rounded-full bg-red-500"></span>
                         <h2 className="text-lg font-semibold text-white">Ocupadas (Pagadas)</h2>
-                        <span className="ml-auto text-stone-500 text-sm">{occupied} lugares • {confirmedReservations.length} reservas</span>
+                        <span className="ml-auto text-stone-500 text-sm">{occupied} lugares • {confirmedGroups.length} grupos</span>
                     </div>
                     <div className="divide-y divide-stone-800/50 max-h-80 overflow-y-auto">
-                        {confirmedReservations.length === 0 ? (
+                        {confirmedGroups.length === 0 ? (
                             <p className="px-6 py-4 text-stone-500 text-sm">No hay reservas confirmadas.</p>
                         ) : (
-                            confirmedReservations.map((reservation) => (
-                                <div
-                                    key={reservation.id}
-                                    className={`px-6 py-3 flex items-center gap-4 transition-colors ${reservation.checkedIn
-                                        ? "bg-green-900/20 border-l-4 border-l-green-500"
-                                        : ""
-                                        }`}
-                                >
-                                    <div className="flex-1 min-w-0">
-                                        <p className={`font-medium truncate ${reservation.checkedIn ? "text-green-400" : "text-white"}`}>
-                                            {reservation.userName || reservation.userEmail || "Sin nombre"}
-                                            <span className="text-stone-500 font-normal ml-2">({reservation.seatIds.length} {reservation.seatIds.length === 1 ? 'lugar' : 'lugares'})</span>
-                                        </p>
-                                    </div>
-                                    <div className="text-stone-400 text-sm whitespace-nowrap">
-                                        Mesa {getTableNumbers(reservation.seatIds)}
-                                    </div>
-                                    <button
-                                        onClick={() => toggleCheckIn(reservation.id, reservation.checkedIn || false)}
-                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${reservation.checkedIn
-                                            ? "bg-green-600 text-white hover:bg-green-700"
-                                            : "bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white"
+                            confirmedGroups.map((group) => {
+                                const allCheckedIn = group.checkedInCount === group.reservationIds.length;
+                                return (
+                                    <div
+                                        key={group.id} // This is the first reservation ID
+                                        className={`px-6 py-3 flex items-center gap-4 transition-colors ${allCheckedIn
+                                            ? "bg-green-900/20 border-l-4 border-l-green-500"
+                                            : ""
                                             }`}
                                     >
-                                        {reservation.checkedIn ? "✓ Presente" : "Marcar"}
-                                    </button>
-                                </div>
-                            ))
+                                        <div className="flex-1 min-w-0">
+                                            <p className={`font-medium truncate ${allCheckedIn ? "text-green-400" : "text-white"}`}>
+                                                {group.userName}
+                                                <span className="text-stone-500 font-normal ml-2">
+                                                    ({group.seatIds.length} {group.seatIds.length === 1 ? 'lugar' : 'lugares'})
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <div className="text-stone-400 text-sm whitespace-nowrap">
+                                            Mesa {getTableNumbers(group.seatIds)}
+                                        </div>
+                                        <button
+                                            onClick={() => toggleCheckIn(group.reservationIds, !allCheckedIn)}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${allCheckedIn
+                                                ? "bg-green-600 text-white hover:bg-green-700"
+                                                : "bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white"
+                                                }`}
+                                        >
+                                            {allCheckedIn ? "✓ Presente" : "Marcar"}
+                                        </button>
+                                    </div>
+                                )
+                            })
                         )}
                     </div>
                 </div>
 
-                {/* Pending (Not Paid) - corresponds to reserved seats */}
+                {/* Pending (Not Paid) */}
                 <div className="bg-[#1a1a1a] border border-stone-800/50 rounded-xl overflow-hidden">
                     <div className="px-6 py-4 border-b border-stone-800/50 flex items-center gap-3">
                         <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
                         <h2 className="text-lg font-semibold text-white">Reservadas (Pendientes)</h2>
-                        <span className="ml-auto text-stone-500 text-sm">{reserved} lugares • {pendingReservations.length} reservas</span>
+                        <span className="ml-auto text-stone-500 text-sm">{reserved} lugares • {pendingGroups.length} grupos</span>
                     </div>
                     <div className="divide-y divide-stone-800/50 max-h-80 overflow-y-auto">
-                        {pendingReservations.length === 0 ? (
+                        {pendingGroups.length === 0 ? (
                             <p className="px-6 py-4 text-stone-500 text-sm">No hay reservas pendientes.</p>
                         ) : (
-                            pendingReservations.map((reservation) => (
-                                <div
-                                    key={reservation.id}
-                                    className={`px-6 py-3 flex items-center gap-4 transition-colors ${reservation.checkedIn
-                                        ? "bg-yellow-900/20 border-l-4 border-l-yellow-500"
-                                        : ""
-                                        }`}
-                                >
-                                    <div className="flex-1 min-w-0">
-                                        <p className={`font-medium truncate ${reservation.checkedIn ? "text-yellow-400" : "text-white"}`}>
-                                            {reservation.userName || reservation.userEmail || "Sin nombre"}
-                                            <span className="text-stone-500 font-normal ml-2">({reservation.seatIds.length} {reservation.seatIds.length === 1 ? 'lugar' : 'lugares'})</span>
-                                        </p>
-                                    </div>
-                                    <div className="text-stone-400 text-sm whitespace-nowrap">
-                                        Mesa {getTableNumbers(reservation.seatIds)}
-                                    </div>
-                                    <button
-                                        onClick={() => toggleCheckIn(reservation.id, reservation.checkedIn || false)}
-                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${reservation.checkedIn
-                                            ? "bg-yellow-600 text-white hover:bg-yellow-700"
-                                            : "bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white"
+                            pendingGroups.map((group) => {
+                                const allCheckedIn = group.checkedInCount === group.reservationIds.length;
+                                return (
+                                    <div
+                                        key={group.id}
+                                        className={`px-6 py-3 flex items-center gap-4 transition-colors ${allCheckedIn
+                                            ? "bg-yellow-900/20 border-l-4 border-l-yellow-500"
+                                            : ""
                                             }`}
                                     >
-                                        {reservation.checkedIn ? "✓ Presente" : "Marcar"}
-                                    </button>
-                                </div>
-                            ))
+                                        <div className="flex-1 min-w-0">
+                                            <p className={`font-medium truncate ${allCheckedIn ? "text-yellow-400" : "text-white"}`}>
+                                                {group.userName}
+                                                <span className="text-stone-500 font-normal ml-2">
+                                                    ({group.seatIds.length} {group.seatIds.length === 1 ? 'lugar' : 'lugares'})
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <div className="text-stone-400 text-sm whitespace-nowrap">
+                                            Mesa {getTableNumbers(group.seatIds)}
+                                        </div>
+                                        <button
+                                            onClick={() => toggleCheckIn(group.reservationIds, !allCheckedIn)}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${allCheckedIn
+                                                ? "bg-yellow-600 text-white hover:bg-yellow-700"
+                                                : "bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white"
+                                                }`}
+                                        >
+                                            {allCheckedIn ? "✓ Presente" : "Marcar"}
+                                        </button>
+                                    </div>
+                                )
+                            })
                         )}
                     </div>
                 </div>
