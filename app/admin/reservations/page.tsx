@@ -223,7 +223,13 @@ function ReservationsContent() {
                 };
             }
             groups[key].reservationIds.push(r.id);
-            groups[key].seatIds.push(...r.seatIds);
+            // Use spread but ensure uniqueness later or now
+            r.seatIds.forEach(sid => {
+                if (!groups[key].seatIds.includes(sid)) {
+                    groups[key].seatIds.push(sid);
+                }
+            });
+
             if (r.checkedIn) groups[key].checkedInCount++;
         });
 
