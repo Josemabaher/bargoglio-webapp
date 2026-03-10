@@ -45,6 +45,8 @@ export default function SeatActionModal({
         fecha_nacimiento: "",
     });
 
+    const [paymentStatus, setPaymentStatus] = useState<"pending" | "confirmed">("pending");
+
     const searchRef = useRef<HTMLDivElement>(null);
 
     // Handle clicking outside of search results
@@ -195,7 +197,7 @@ export default function SeatActionModal({
             }
 
             // 1.5 Update User Points & Stats (Write-Time Aggregation)
-            if (userId) {
+            if (userId && paymentStatus === "confirmed") {
                 const pointsToAdd = Math.floor((seatPrice || 0) / 1000);
 
                 await updateDoc(doc(db, "users", userId), {
@@ -216,8 +218,8 @@ export default function SeatActionModal({
                 seatIds: [seatId],
                 totalAmount: seatPrice || 0, // Store price for points calculation
                 amount: seatPrice || 0, // Store as amount too for compatibility
-                status: "confirmed",
-                checkedIn: true,
+                status: paymentStatus,
+                checkedIn: false,
                 createdAt: Timestamp.now(),
             });
 
@@ -382,6 +384,32 @@ export default function SeatActionModal({
                                     onChange={(e) => setFormData({ ...formData, fecha_nacimiento: e.target.value })}
                                     className="w-full px-4 py-2 bg-[#0a0a0a] border border-stone-800 rounded-lg text-white focus:outline-none focus:border-bargoglio-orange/50 transition-colors"
                                 />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5 pt-2">
+                            <label className="block text-sm font-medium text-stone-400">Estado de Pago</label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setPaymentStatus("pending")}
+                                    className={`py-2 rounded-lg text-sm font-medium transition-all border ${paymentStatus === "pending"
+                                        ? "bg-amber-500/10 border-amber-500 text-amber-500"
+                                        : "bg-[#0a0a0a] border-stone-800 text-stone-500 hover:border-stone-600"
+                                        }`}
+                                >
+                                    Pendiente
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPaymentStatus("confirmed")}
+                                    className={`py-2 rounded-lg text-sm font-medium transition-all border ${paymentStatus === "confirmed"
+                                        ? "bg-green-500/10 border-green-500 text-green-500"
+                                        : "bg-[#0a0a0a] border-stone-800 text-stone-500 hover:border-stone-600"
+                                        }`}
+                                >
+                                    Pagado
+                                </button>
                             </div>
                         </div>
 
