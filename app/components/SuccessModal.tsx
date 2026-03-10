@@ -10,12 +10,13 @@ export default function SuccessModal() {
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        if (searchParams.get("success") === "true") {
-            setIsOpen(true);
-            // Clean URL without refresh
-            const newUrl = window.location.pathname;
-            window.history.replaceState({}, '', newUrl);
-        }
+        // Disabled since we now use the dedicated /checkout/success page
+        // if (searchParams.get("success") === "true") {
+        //     setIsOpen(true);
+        //     // Clean URL without refresh
+        //     const newUrl = window.location.pathname;
+        //     window.history.replaceState({}, '', newUrl);
+        // }
     }, [searchParams]);
 
     if (!isOpen) return null;

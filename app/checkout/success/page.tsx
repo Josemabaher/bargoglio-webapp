@@ -11,26 +11,6 @@ function SuccessContent() {
     const paymentId = searchParams.get("payment_id");
     const [loading, setLoading] = useState(false);
 
-    const [countdown, setCountdown] = useState(3);
-
-    useEffect(() => {
-        // Countdown timer
-        const interval = setInterval(() => {
-            setCountdown((prev) => prev - 1);
-        }, 1000);
-
-        // Redirect after 3 seconds
-        const timeout = setTimeout(() => {
-            // Use window.location for a hard redirect if router.push fails or for analytics compatibility
-            window.location.href = "/?success=true";
-        }, 3000);
-
-        return () => {
-            clearInterval(interval);
-            clearTimeout(timeout);
-        };
-    }, [router]);
-
     return (
         <main className="min-h-screen bg-stone-950 text-white flex flex-col">
             <Navbar />
@@ -49,10 +29,6 @@ function SuccessContent() {
                         <h1 className="text-3xl font-serif font-bold text-white mb-2">¡Reserva Confirmada!</h1>
                         <p className="text-stone-400 mb-8">
                             Tu pago se procesó correctamente. Te enviamos los tickets a tu email.
-                            <br />
-                            <span className="text-sm text-stone-500 mt-2 block">
-                                Redirigiendo al inicio en <span className="text-gold-400 font-bold">{countdown}</span> segundos...
-                            </span>
                         </p>
 
                         {paymentId && (
