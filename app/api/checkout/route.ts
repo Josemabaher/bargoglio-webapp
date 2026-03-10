@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
                 failure: `${URL.replace(/\/$/, '')}/checkout/failure`,
                 pending: `${URL.replace(/\/$/, '')}/checkout/pending`,
             },
-            // auto_return: 'approved', // Disabled temporarily to debug back_url error
+            auto_return: 'approved',
             metadata: {
                 event_id: eventId,
                 seat_ids: seatIds ? seatIds.join(',') : '', // Handle empty array
