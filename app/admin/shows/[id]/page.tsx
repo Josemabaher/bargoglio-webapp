@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { FaImage, FaTimes, FaSpinner, FaCheck, FaArrowLeft } from "react-icons/fa";
 import Link from "next/link";
 import { db } from "@/src/lib/firebase/config";
-import { doc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
+import { doc, getDoc, updateDoc, Timestamp, collection, query, getDocs, writeBatch } from "firebase/firestore";
 
 export default function EditShowPage() {
     const router = useRouter();
@@ -140,7 +140,7 @@ export default function EditShowPage() {
                 flyerUrl = await uploadToCloudinary(flyerFile);
             }
 
-            // Update event document
+            // Wait for event update
             const eventRef = doc(db, 'events', eventId);
             await updateDoc(eventRef, {
                 name: formData.title,
@@ -158,6 +158,53 @@ export default function EditShowPage() {
                     { zone: "Area Amarilla", price: formData.pricingType === 'zones' ? parseInt(formData.zona3Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0) },
                 ],
             });
+
+            // Sync prices to all seats in the event's subcollection
+            const seatsRef = collection(db, "events", eventId, "seats");
+            const q = query(seatsRef);
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                // Determine prices based on new pricingType
+                const priceMap: Record<string, number> = {
+                    "Area Azul": formData.pricingType === 'zones' ? parseInt(formData.zona1Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0),
+                    "Area Roja": formData.pricingType === 'zones' ? parseInt(formData.zona2Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0),
+                    "Area Amarilla": formData.pricingType === 'zones' ? parseInt(formData.zona3Price) : (formData.pricingType === 'general' ? parseInt(formData.generalPrice) : 0),
+                };
+
+                // Use batches to update (Firestore limit 500 per batch)
+                const batches = [];
+                let currentBatch = writeBatch(db);
+                let opCount = 0;
+
+                querySnapshot.docs.forEach((seatDoc) => {
+                    const seatData = seatDoc.data();
+                    let newPrice = 0;
+
+                    if (formData.pricingType === 'zones' && seatData.zone) {
+                        newPrice = priceMap[seatData.zone as string] || 0;
+                    } else if (formData.pricingType === 'general') {
+                        newPrice = priceMap["Area Azul"]; // or parseInt(formData.generalPrice)
+                    }
+
+                    if (seatData.price !== newPrice) { // Only update if price changed
+                        currentBatch.update(seatDoc.ref, { price: newPrice });
+                        opCount++;
+
+                        if (opCount === 500) {
+                            batches.push(currentBatch.commit());
+                            currentBatch = writeBatch(db);
+                            opCount = 0;
+                        }
+                    }
+                });
+
+                if (opCount > 0) {
+                    batches.push(currentBatch.commit());
+                }
+
+                await Promise.all(batches);
+            }
 
             setSuccess(true);
 
