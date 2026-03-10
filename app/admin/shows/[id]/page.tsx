@@ -181,8 +181,8 @@ export default function EditShowPage() {
                     const seatData = seatDoc.data();
                     let newPrice = 0;
 
-                    if (formData.pricingType === 'zones' && seatData.zone) {
-                        newPrice = priceMap[seatData.zone as string] || 0;
+                    if (formData.pricingType === 'zones' && seatData.label) {
+                        newPrice = priceMap[seatData.label as string] || 0;
                     } else if (formData.pricingType === 'general') {
                         newPrice = priceMap["Area Azul"]; // or parseInt(formData.generalPrice)
                     }
