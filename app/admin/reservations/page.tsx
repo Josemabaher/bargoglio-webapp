@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { collection, getDocs, query, where, doc, updateDoc, getDoc } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc, getDoc, increment, Timestamp } from "firebase/firestore";
 import { db } from "@/src/lib/firebase/config";
 import { useSeats } from "@/src/hooks/useSeats";
 import { useEvents } from "@/src/hooks/useEvents";
@@ -158,6 +158,42 @@ function ReservationsContent() {
             );
         } catch (err) {
             console.error("Error updating check-in:", err);
+        }
+    };
+
+    // Confirm Payment
+    const confirmPayment = async (group: any) => {
+        if (!confirm(`¿Confirmar pago de la reserva de ${group.userName}?`)) return;
+        try {
+            let totalAmount = 0;
+            let userId = "";
+
+            await Promise.all(group.reservationIds.map(async (id: string) => {
+                const reservationRef = doc(db, "reservations", id);
+                const resDoc = await getDoc(reservationRef);
+                if (resDoc.exists()) {
+                    const data = resDoc.data();
+                    totalAmount += (data.amount || data.totalAmount || 0);
+                    if (!userId) userId = data.userId;
+                    await updateDoc(reservationRef, { status: "confirmed" });
+                }
+            }));
+
+            if (userId && userId !== "manual-booking" && userId !== "guest_unknown") {
+                const pointsToAdd = Math.floor(totalAmount / 1000);
+                const userRef = doc(db, "users", userId);
+                await updateDoc(userRef, {
+                    points: increment(pointsToAdd),
+                    totalSpent: increment(totalAmount),
+                    visitCount: increment(1),
+                    lastVisit: Timestamp.now()
+                });
+            }
+
+            setRefreshTrigger(prev => prev + 1);
+        } catch (err) {
+            console.error("Error confirming payment:", err);
+            alert("Error al confirmar el pago");
         }
     };
 
@@ -432,15 +468,24 @@ function ReservationsContent() {
                                         <div className="text-stone-400 text-sm whitespace-nowrap">
                                             Mesa {getTableNumbers(group.seatIds)}
                                         </div>
-                                        <button
-                                            onClick={() => toggleCheckIn(group.reservationIds, !allCheckedIn)}
-                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${allCheckedIn
-                                                ? "bg-yellow-600 text-white hover:bg-yellow-700"
-                                                : "bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white"
-                                                }`}
-                                        >
-                                            {allCheckedIn ? "✓ Presente" : "Marcar"}
-                                        </button>
+                                        <div className="flex flex-col sm:flex-row items-center gap-2">
+                                            <button
+                                                onClick={() => confirmPayment(group)}
+                                                className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest bg-green-500/10 text-green-500 border border-green-500 hover:bg-green-500 hover:text-white transition-all shadow-sm shadow-green-500/20 whitespace-nowrap"
+                                                title="Marcar como pagado"
+                                            >
+                                                $ Pagado
+                                            </button>
+                                            <button
+                                                onClick={() => toggleCheckIn(group.reservationIds, !allCheckedIn)}
+                                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${allCheckedIn
+                                                    ? "bg-yellow-600 text-white hover:bg-yellow-700"
+                                                    : "bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-white"
+                                                    }`}
+                                            >
+                                                {allCheckedIn ? "✓ Presente" : "Marcar"}
+                                            </button>
+                                        </div>
                                     </div>
                                 )
                             })
