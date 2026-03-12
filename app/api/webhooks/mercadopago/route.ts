@@ -176,6 +176,19 @@ export async function POST(req: NextRequest) {
                 // Fetch event details needed for reservation/email
                 const eventDoc = await adminDb.collection('events').doc(event_id).get();
                 const eventData = eventDoc.data() || {};
+                
+                // Determine the best email to send the ticket to
+                let contactEmail = paymentData.payer?.email;
+                if (isGuest && guest_data) {
+                    const guestInfo = typeof guest_data === 'string' ? JSON.parse(guest_data) : guest_data;
+                    if (guestInfo.email) contactEmail = guestInfo.email;
+                } else if (user_id && user_id !== 'guest_unknown') {
+                    const uDoc = await adminDb.collection('users').doc(user_id).get();
+                    if (uDoc.exists) {
+                        const uData = uDoc.data();
+                        if (uData?.email) contactEmail = uData.email;
+                    }
+                }
 
                 const reservationRef = await adminDb.collection('reservations').add({
                     eventId: event_id,
@@ -187,7 +200,7 @@ export async function POST(req: NextRequest) {
                     paymentId: id,
                     checkInStatus: 'pending',
                     createdAt: new Date(),
-                    payerEmail: paymentData.payer?.email
+                    payerEmail: contactEmail
                 });
 
                 // 5.5 WRITE TO VISITS SUBCOLLECTION
@@ -207,9 +220,8 @@ export async function POST(req: NextRequest) {
                 // ==========================
                 // 6. SEND TICKET EMAIL
                 // ==========================
-                const payerEmail = paymentData.payer?.email;
-                if (payerEmail) {
-                    await sendTicketEmail(payerEmail, {
+                if (contactEmail) {
+                    await sendTicketEmail(contactEmail, {
                         id: reservationRef.id,
                         eventName: eventData.title || 'Evento en Bargoglio',
                         date: eventData.date || new Date().toISOString().split('T')[0],
