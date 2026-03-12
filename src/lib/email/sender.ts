@@ -62,8 +62,12 @@ END:VCALENDAR`;
 }
 
 const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('es-AR', { dateStyle: 'long' }).format(date);
+    try {
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`;
+    } catch (e) {
+        return dateString;
+    }
 };
 
 
@@ -114,12 +118,12 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
                     <span style="color: #888; font-size: 11px; text-transform: uppercase;">EVENTO</span>
                     <p style="color: #fff; font-size: 18px; margin: 5px 0 0 0; font-weight: bold; text-transform: uppercase;">${reservationDetails.eventName}</p>
                 </div>
-                <div style="display: flex; gap: 40px; margin-bottom: 20px;">
-                    <div>
+                <div style="display: flex; flex-direction: row; gap: 40px; margin-bottom: 20px;">
+                    <div style="flex: 1;">
                         <span style="color: #888; font-size: 11px; text-transform: uppercase;">FECHA</span>
                         <p style="color: #d4af37; font-size: 15px; margin: 5px 0 0 0;">${formatDate(reservationDetails.date)}</p>
                     </div>
-                    <div>
+                    <div style="flex: 1;">
                         <span style="color: #888; font-size: 11px; text-transform: uppercase;">HORA</span>
                         <p style="color: #d4af37; font-size: 15px; margin: 5px 0 0 0;">${reservationDetails.time || '22:00'} hs</p>
                     </div>
