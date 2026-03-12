@@ -220,13 +220,36 @@ export async function POST(req: NextRequest) {
                 // ==========================
                 // 6. SEND TICKET EMAIL
                 // ==========================
+                
+                // Construct the readable seat strings from MP items
+                let emailSeats: string[] = [];
+                if (paymentData.additional_info?.items) {
+                    const ticketItems = paymentData.additional_info.items.filter((item: any) => item.title && !item.title.toLowerCase().includes('servicio'));
+                    
+                    const summaryMap = new Map<string, number>();
+                    ticketItems.forEach((item: any) => {
+                        const title = String(item.title).toUpperCase();
+                        const qty = Number(item.quantity) || 1;
+                        summaryMap.set(title, (summaryMap.get(title) || 0) + qty);
+                    });
+
+                    summaryMap.forEach((qty, title) => {
+                        emailSeats.push(`${title} (${qty} LUGAR${qty > 1 ? 'ES' : ''})`);
+                    });
+                }
+                
+                // Fallback if no items found in MP payload
+                if (emailSeats.length === 0) {
+                    emailSeats = seatList.length > 0 ? seatList : ['ENTRADA GENERAL (1 LUGAR)'];
+                }
+
                 if (contactEmail) {
                     await sendTicketEmail(contactEmail, {
                         id: reservationRef.id,
                         eventName: eventData.title || 'Evento en Bargoglio',
                         date: eventData.date || new Date().toISOString().split('T')[0],
                         time: eventData.time || '22:00',
-                        seats: seatList
+                        seats: emailSeats
                     });
                 }
             }

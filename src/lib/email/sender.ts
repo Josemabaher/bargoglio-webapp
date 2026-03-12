@@ -75,12 +75,14 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
     const googleCalendarUrl = generateGoogleCalendarUrl(reservationDetails);
     const appleCalendarUrl = generateAppleCalendarUrl(reservationDetails);
 
+    const appUrl = process.env.NEXT_PUBLIC_URL || 'https://bargoglio-webapp.vercel.app';
+
     // 3. Send Email with improved design
     try {
         const info = await transporter.sendMail({
             from: `"Bargoglio Club" <${process.env.SMTP_USER}>`, // sender address
             to: to, // list of receivers
-            subject: `Tus entradas para ${reservationDetails.eventName} en Bargoglio`, // Subject line
+            subject: `Reserva Confirmada: ${reservationDetails.eventName}`, // Subject line
             html: `
 <!DOCTYPE html>
 <html>
@@ -88,47 +90,48 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin: 0; padding: 0; background-color: #1a1a1a; font-family: Georgia, serif;">
-    <div style="max-width: 600px; margin: 0 auto; background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%); border: 1px solid #d4af37;">
+<body style="margin: 0; padding: 0; background-color: #1a1a1a; font-family: Arial, sans-serif;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border-left: 1px solid #d4af37; border-right: 1px solid #d4af37;">
         
         <!-- Header -->
-        <div style="text-align: center; padding: 40px 20px; border-bottom: 1px solid #d4af37;">
-            <h1 style="color: #d4af37; font-size: 32px; margin: 0; letter-spacing: 4px;">BARGOGLIO</h1>
-            <p style="color: #888; font-size: 12px; margin-top: 8px; text-transform: uppercase; letter-spacing: 2px;">Club de Jazz</p>
+        <div style="text-align: center; padding: 40px 20px; border-bottom: 1px solid #333; border-top: 1px solid #d4af37;">
+            <img src="${appUrl}/Bargoglio-Logo-Circulo-Transparente-02.png" alt="Bargoglio Logo" style="width: 90px; height: 90px; margin-bottom: 15px;" />
+            <h1 style="color: #d4af37; font-size: 26px; margin: 0; letter-spacing: 4px; font-family: Georgia, serif;">BARGOGLIO</h1>
+            <p style="color: #888; font-size: 11px; margin-top: 10px; font-weight: bold; letter-spacing: 0.5px;">Plataforma Cultural | Música - Libros - Gastronomía</p>
         </div>
         
         <!-- Main Content -->
         <div style="padding: 40px 30px;">
-            <h2 style="color: #fff; font-size: 24px; margin: 0 0 20px 0;">Confirmación de Reserva</h2>
+            <h2 style="color: #fff; font-size: 22px; margin: 0 0 15px 0; text-transform: uppercase; font-family: inherit;">RESERVA CONFIRMADA</h2>
             
-            <p style="color: #ccc; font-size: 16px; line-height: 1.6;">
-                ¡Tu reserva está confirmada! Te esperamos para disfrutar de una noche inolvidable.
+            <p style="color: #fff; font-size: 15px; margin-bottom: 30px; font-weight: bold;">
+                Ingresás anunciándote con tu nombre en la puerta
             </p>
             
             <!-- Event Details Box -->
-            <div style="background: rgba(212, 175, 55, 0.1); border: 1px solid #d4af37; border-radius: 8px; padding: 25px; margin: 30px 0;">
+            <div style="background-color: transparent; border: 1px solid #5a5639; padding: 25px; margin: 30px 0;">
                 <div style="margin-bottom: 20px;">
-                    <span style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Evento</span>
-                    <p style="color: #fff; font-size: 20px; margin: 5px 0 0 0; font-weight: bold;">${reservationDetails.eventName}</p>
+                    <span style="color: #888; font-size: 11px; text-transform: uppercase;">EVENTO</span>
+                    <p style="color: #fff; font-size: 18px; margin: 5px 0 0 0; font-weight: bold; text-transform: uppercase;">${reservationDetails.eventName}</p>
                 </div>
-                <div style="display: flex; gap: 30px;">
+                <div style="display: flex; gap: 40px; margin-bottom: 20px;">
                     <div>
-                        <span style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Fecha</span>
-                        <p style="color: #d4af37; font-size: 16px; margin: 5px 0 0 0;">${formatDate(reservationDetails.date)}</p>
+                        <span style="color: #888; font-size: 11px; text-transform: uppercase;">FECHA</span>
+                        <p style="color: #d4af37; font-size: 15px; margin: 5px 0 0 0;">${formatDate(reservationDetails.date)}</p>
                     </div>
                     <div>
-                        <span style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Hora</span>
-                        <p style="color: #d4af37; font-size: 16px; margin: 5px 0 0 0;">${reservationDetails.time || '22:00'} hs</p>
+                        <span style="color: #888; font-size: 11px; text-transform: uppercase;">HORA</span>
+                        <p style="color: #d4af37; font-size: 15px; margin: 5px 0 0 0;">${reservationDetails.time || '22:00'} hs</p>
                     </div>
                 </div>
-                <div style="margin-top: 20px;">
-                    <span style="color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Ubicaciones</span>
-                    <p style="color: #fff; font-size: 16px; margin: 5px 0 0 0;">${reservationDetails.seats.join(', ')}</p>
+                <div>
+                    <span style="color: #888; font-size: 11px; text-transform: uppercase;">UBICACIONES</span>
+                    <p style="color: #fff; font-size: 14px; margin: 5px 0 0 0; font-weight: bold; line-height: 1.5;">${reservationDetails.seats.join('<br>')}</p>
                 </div>
             </div>
             
-            <!-- QR Code -->
-            <div style="text-align: center; margin: 40px 0; padding: 30px; background: #fff; border-radius: 8px;">
+            <!-- QR Code Box -->
+            <div style="text-align: center; margin: 40px 0; padding: 30px; background: #fff;">
                 <img src="${qrDataURL}" alt="QR Ticket" style="width: 180px; height: 180px;" />
                 <p style="color: #333; font-size: 12px; margin-top: 15px;">
                     <strong>ID de Reserva:</strong> ${reservationDetails.id}
@@ -140,24 +143,28 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
             
             <!-- Calendar Buttons -->
             <div style="text-align: center; margin: 30px 0;">
-                <p style="color: #888; font-size: 12px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                    Agregar al calendario
+                <p style="color: #888; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; font-weight: bold;">
+                    AGREGAR AL CALENDARIO
                 </p>
-                <a href="${googleCalendarUrl}" target="_blank" style="display: inline-block; padding: 12px 24px; background: #4285f4; color: #fff; text-decoration: none; border-radius: 4px; font-size: 14px; margin: 5px;">
-                    📅 Google Calendar
-                </a>
-                <a href="${appleCalendarUrl}" download="bargoglio-reserva.ics" style="display: inline-block; padding: 12px 24px; background: #333; color: #fff; text-decoration: none; border-radius: 4px; font-size: 14px; margin: 5px; border: 1px solid #555;">
-                    🍎 Apple Calendar
-                </a>
+                <div style="display: inline-block; margin-right: 10px;">
+                    <a href="${googleCalendarUrl}" target="_blank" style="display: inline-block; padding: 10px 20px; background: #4285f4; color: #fff; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                        Google Calendar
+                    </a>
+                </div>
+                <div style="display: inline-block;">
+                    <a href="${appleCalendarUrl}" download="bargoglio-reserva.ics" style="display: inline-block; padding: 10px 20px; background: transparent; border: 1px solid #555; color: #fff; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                        🍎 Apple Calendar
+                    </a>
+                </div>
             </div>
         </div>
         
         <!-- Footer -->
-        <div style="text-align: center; padding: 30px; border-top: 1px solid #333; background: #111;">
-            <p style="color: #666; font-size: 12px; margin: 0;">
+        <div style="text-align: center; padding: 20px; border-top: 1px solid #222; background-color: #111;">
+            <p style="color: #666; font-size: 11px; margin: 0;">
                 Bargoglio Club | Buenos Aires, Argentina
             </p>
-            <p style="color: #444; font-size: 10px; margin-top: 10px;">
+            <p style="color: #444; font-size: 9px; margin-top: 10px;">
                 Este email fue generado automáticamente. Si tienes dudas, contáctanos por WhatsApp.
             </p>
         </div>
