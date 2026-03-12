@@ -113,6 +113,7 @@ export default function GuestCheckoutPage() {
                     items: cart.items,
                     payer: payerData,
                     eventId: cart.eventId,
+                    eventTitle: cart.eventTitle,
                     seatIds: cart.items.filter((i: any) => i.id !== 'general').map((i: any) => i.id),
                     serviceFee: serviceFee // Explicitly pass fee to be verified by backend
                 })

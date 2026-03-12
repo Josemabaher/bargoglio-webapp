@@ -9,7 +9,7 @@ const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN 
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { items, payer, eventId, seatIds, serviceFee } = body;
+        const { items, payer, eventId, eventTitle, seatIds, serviceFee } = body;
 
         console.log("Creating Preference - Incoming Body:", JSON.stringify(body, null, 2));
 
@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
             auto_return: 'approved',
             metadata: {
                 event_id: eventId,
+                event_title: eventTitle ? String(eventTitle).substring(0, 100) : '',
                 seat_ids: seatIds ? seatIds.join(',') : '', // Handle empty array
                 user_id: payer.uid || 'guest', // 'guest' for non-logged users
                 is_guest: payer.isGuest ? 'true' : 'false',

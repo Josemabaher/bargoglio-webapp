@@ -82,7 +82,7 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
         const info = await transporter.sendMail({
             from: `"Bargoglio Club" <${process.env.SMTP_USER}>`, // sender address
             to: to, // list of receivers
-            subject: `Reserva Confirmada: ${reservationDetails.eventName}`, // Subject line
+            subject: `Tu compra fue un éxito`, // Subject line
             html: `
 <!DOCTYPE html>
 <html>

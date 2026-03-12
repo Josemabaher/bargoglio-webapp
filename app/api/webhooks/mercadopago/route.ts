@@ -174,8 +174,10 @@ export async function POST(req: NextRequest) {
                 // 4. CREATE RESERVATION
                 // ==========================
                 // Fetch event details needed for reservation/email
+                // Fallback to webhook metadata if eventDoc fails to load
                 const eventDoc = await adminDb.collection('events').doc(event_id).get();
                 const eventData = eventDoc.data() || {};
+                const eventTitle = metadata.event_title || eventData.name || eventData.title || 'Evento';
                 
                 // Determine the best email to send the ticket to
                 let contactEmail = paymentData.payer?.email;
@@ -192,7 +194,7 @@ export async function POST(req: NextRequest) {
 
                 const reservationRef = await adminDb.collection('reservations').add({
                     eventId: event_id,
-                    eventName: eventData.name || eventData.title || 'Evento',
+                    eventName: eventTitle,
                     userId: user_id,
                     seatIds: seatList,
                     amount: amount,
@@ -208,7 +210,7 @@ export async function POST(req: NextRequest) {
                     await adminDb.collection('users').doc(user_id).collection('visits').doc(reservationRef.id).set({
                         reservationId: reservationRef.id,
                         eventId: event_id,
-                        eventName: eventData.name || eventData.title || 'Evento',
+                        eventName: eventTitle,
                         date: eventData.date || 'N/A',
                         amount: amount,
                         seats: seatList,
@@ -246,7 +248,7 @@ export async function POST(req: NextRequest) {
                 if (contactEmail) {
                     await sendTicketEmail(contactEmail, {
                         id: reservationRef.id,
-                        eventName: eventData.title || 'Evento en Bargoglio',
+                        eventName: eventTitle,
                         date: eventData.date || new Date().toISOString().split('T')[0],
                         time: eventData.time || '22:00',
                         seats: emailSeats
