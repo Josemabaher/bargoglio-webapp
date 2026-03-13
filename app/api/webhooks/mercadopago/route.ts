@@ -90,9 +90,6 @@ export async function POST(req: NextRequest) {
                             role: 'user', // Default role
                             updatedAt: new Date()
                         }, { merge: true });
-
-                        let activationLink = null;
-                        
                         // If brand new user, set creation fields
                         if (isNewUser) {
                             await userRef.set({
