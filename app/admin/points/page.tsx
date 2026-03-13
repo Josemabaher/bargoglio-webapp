@@ -44,8 +44,8 @@ export default function PointsPage() {
                     giftsSent: 0 // Placeholder
                 });
 
-                // Ordenar por última actualización
-                userList.sort((a, b) => b.updatedAt - a.updatedAt);
+                // Ordenar por cantidad de puntos (Mayor a Menor)
+                userList.sort((a, b) => b.points - a.points);
                 
                 const recent = userList.slice(0, 10).map(u => ({
                     id: u.id,
