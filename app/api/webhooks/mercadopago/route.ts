@@ -41,11 +41,15 @@ export async function POST(req: NextRequest) {
                 // ==========================
                 const isGuest = String(is_guest) === 'true';
                 let activationLink: string | null = null;
+                
+                console.log(`[Webhook] isGuest flag: ${isGuest}, guest_data present: ${!!guest_data}`);
 
                 if (isGuest && guest_data) {
                     try {
                         const guestInfo = typeof guest_data === 'string' ? JSON.parse(guest_data) : guest_data;
                         const email = guestInfo.email;
+                        
+                        console.log(`[Webhook] Processing guest registration for email: ${email}`);
 
                         // Check if auth user exists
                         let uid;
@@ -250,14 +254,22 @@ export async function POST(req: NextRequest) {
                 }
 
                 if (contactEmail) {
-                    await sendTicketEmail(contactEmail, {
-                        id: reservationRef.id,
-                        eventName: eventTitle,
-                        date: eventData.date || new Date().toISOString().split('T')[0],
-                        time: eventData.time || '22:00',
-                        seats: emailSeats,
-                        activationLink: activationLink || undefined
-                    });
+                    console.log(`[Webhook] Sending ticket email to: ${contactEmail}`);
+                    try {
+                        await sendTicketEmail(contactEmail, {
+                            id: reservationRef.id,
+                            eventName: eventTitle,
+                            date: eventData.date || new Date().toISOString().split('T')[0],
+                            time: eventData.time || '22:00',
+                            seats: emailSeats,
+                            activationLink: activationLink || undefined
+                        });
+                        console.log(`[Webhook] Ticket email sent successfully to ${contactEmail}`);
+                    } catch (emailError) {
+                        console.error("[Webhook] Error sending ticket email:", emailError);
+                    }
+                } else {
+                    console.log("[Webhook] WARNING: No contactEmail found, skipping ticket email.");
                 }
             }
         }
