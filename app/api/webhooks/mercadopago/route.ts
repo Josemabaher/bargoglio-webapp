@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
                 // 1. GUEST ACCOUNT HANDLING
                 // ==========================
                 const isGuest = String(is_guest) === 'true';
+                let activationLink: string | null = null;
 
                 if (isGuest && guest_data) {
                     try {
@@ -90,19 +91,19 @@ export async function POST(req: NextRequest) {
                             updatedAt: new Date()
                         }, { merge: true });
 
+                        let activationLink = null;
+                        
                         // If brand new user, set creation fields
                         if (isNewUser) {
                             await userRef.set({
                                 createdAt: new Date(),
-                                points: 0,
+                                points: 500, // Grant 500 initial points
                                 nivel_cliente: 'Bronce'
                             }, { merge: true });
 
-                            // Send Password Reset Link for Account Claiming
-                            const resetLink = await adminAuth.generatePasswordResetLink(email);
-                            console.log("[Webhook] Generated reset link for new user.");
-
-                            await sendWelcomeEmail(email, guestInfo.nombre, resetLink);
+                            // Generate Password Reset Link for Account Claiming
+                            activationLink = await adminAuth.generatePasswordResetLink(email);
+                            console.log("[Webhook] Generated activation link for new user.");
                         }
 
                     } catch (err) {
@@ -251,7 +252,8 @@ export async function POST(req: NextRequest) {
                         eventName: eventTitle,
                         date: eventData.date || new Date().toISOString().split('T')[0],
                         time: eventData.time || '22:00',
-                        seats: emailSeats
+                        seats: emailSeats,
+                        activationLink: activationLink || undefined
                     });
                 }
             }

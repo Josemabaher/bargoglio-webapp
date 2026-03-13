@@ -1,6 +1,14 @@
 import nodemailer from 'nodemailer';
-import { ReservationDetails } from '@/src/types'; // Assuming types are exported centrally, or redefine locally if needed.
 import QRCode from 'qrcode';
+
+export interface ReservationDetails {
+    id: string;
+    eventName: string;
+    date: string;
+    time: string;
+    seats: string[];
+    activationLink?: string;
+}
 
 // Create a transporter object using the default SMTP transport
 const transporter = nodemailer.createTransport({
@@ -135,6 +143,19 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
                     <p style="color: #fff; font-size: 14px; margin: 5px 0 0 0; font-weight: bold; line-height: 1.5;">${reservationDetails.seats.join('<br>')}</p>
                 </div>
             </div>
+
+            ${reservationDetails.activationLink ? `
+            <!-- Welcome Club Box -->
+            <div style="background-color: #A11A16; border-radius: 8px; padding: 25px; margin: 30px 0; border: 1px solid #d4af37;">
+                <h3 style="color: #fff; font-size: 18px; margin: 0 0 10px 0; text-transform: uppercase;">¡Bienvenido al Club Bargoglio!</h3>
+                <p style="color: #fff; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+                    Hemos creado una cuenta para vos para que gestiones tus próximas reservas y sumes puntos. Activá tu cuenta ahora y acumulá <strong><span style="color: #d4af37;">500 puntos Bargoglio</span></strong> para tu próxima consumición en la barra.
+                </p>
+                <div style="text-align: center; margin-top: 25px; margin-bottom: 10px;">
+                    <a href="${reservationDetails.activationLink}" style="background-color: #d4af37; color: #1a1a1a; padding: 12px 25px; text-decoration: none; font-weight: bold; font-size: 14px; border-radius: 4px; text-transform: uppercase; display: inline-block;">Activar y Setear Contraseña</a>
+                </div>
+            </div>
+            ` : ''}
             
             <!-- QR Code Box -->
             <div style="text-align: center; margin: 40px 0; padding: 30px; background: #fff;">
