@@ -77,23 +77,29 @@ export async function POST(req: NextRequest) {
 
                         // Create/Update Firestore User Doc (with Admin SDK to bypass rules)
                         const userRef = adminDb.collection('users').doc(uid);
+                        
+                        // Check if doc exists to catch edge case where Auth user exists but Firestore doc is missing
+                        const docSnap = await userRef.get();
+                        const isNewToClub = !docSnap.exists;
+
                         // Using set with merge to ensure we don't overwrite existing critical data but do update contact info if provided
                         await userRef.set({
                             email: email,
-                            nombre: guestInfo.nombre,
-                            apellido: guestInfo.apellido,
-                            dni: guestInfo.dni,
-                            telefono: guestInfo.telefono,
-                            direccion: guestInfo.direccion,
-                            provincia: guestInfo.provincia,
-                            fecha_nacimiento: guestInfo.fecha_nacimiento, // Storing as string or whatever passed. Admin SDK doesn't need client Timestamp conversion usually
+                            nombre: guestInfo.nombre || '',
+                            apellido: guestInfo.apellido || '',
+                            dni: guestInfo.dni || '',
+                            telefono: guestInfo.telefono || '',
+                            direccion: guestInfo.direccion || '',
+                            provincia: guestInfo.provincia || '',
+                            fecha_nacimiento: guestInfo.fecha_nacimiento || '', // Storing as string or whatever passed. Admin SDK doesn't need client Timestamp conversion usually
                             role: 'user', // Default role
                             updatedAt: new Date()
                         }, { merge: true });
-                        // If brand new user, set creation fields
-                        if (isNewUser) {
+                        
+                        // If brand new user OR missing from Firestore, set creation fields
+                        if (isNewUser || isNewToClub) {
                             await userRef.set({
-                                createdAt: new Date(),
+                                createdAt: docSnap.exists ? docSnap.data()?.createdAt : new Date(),
                                 points: 500, // Grant 500 initial points
                                 nivel_cliente: 'Bronce'
                             }, { merge: true });
