@@ -6,7 +6,9 @@ import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
 import { auth } from '@/src/lib/firebase/config';
 import Image from 'next/image';
 
-export default function AuthActionPage() {
+import { Suspense } from 'react';
+
+function AuthActionContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     
@@ -193,5 +195,19 @@ export default function AuthActionPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function AuthActionPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#121212] flex items-center justify-center">
+                <div className="text-gold-400 font-bold uppercase tracking-widest animate-pulse">
+                    Validando enlace...
+                </div>
+            </div>
+        }>
+            <AuthActionContent />
+        </Suspense>
     );
 }
