@@ -108,25 +108,7 @@ export async function POST(req: NextRequest) {
                                 nivel_cliente: 'Bronce'
                             }, { merge: true });
 
-                            // Trigger Firebase's native Password Reset email to bypass DonWeb SPAM filters
-                            const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-                            if (apiKey) {
-                                try {
-                                    await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`, {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            requestType: 'PASSWORD_RESET',
-                                            email: email,
-                                        })
-                                    });
-                                    console.log("[Webhook] Triggered Firebase native password reset email for:", email);
-                                } catch (emailErr) {
-                                    console.error("[Webhook] Failed to trigger Firebase email:", emailErr);
-                                }
-                            } else {
-                                console.error("[Webhook] Missing NEXT_PUBLIC_FIREBASE_API_KEY, cannot trigger Firebase email.");
-                            }
+                            console.log("[Webhook] New user created, will include activation block in ticket email.");
                         }
 
                     } catch (err) {
@@ -277,7 +259,8 @@ export async function POST(req: NextRequest) {
                             eventName: eventTitle,
                             date: eventData.date || new Date().toISOString().split('T')[0],
                             time: eventData.time || '22:00',
-                            seats: emailSeats
+                            seats: emailSeats,
+                            isNewUser: is_guest === true || is_guest === 'true'
                         });
                         console.log(`[Webhook] Ticket email sent successfully to ${contactEmail}`);
                     } catch (emailError) {
