@@ -89,42 +89,8 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
             from: process.env.SMTP_USER, 
             to: to,
             replyTo: process.env.SMTP_USER,
-            ${reservationDetails.activationLink ? `
-            <div style="background-color: #A11A16; padding: 25px; margin-bottom: 25px; border-radius: 4px; border: 1px solid #d4af37; text-align: center;">
-                <h3 style="color: #fff; font-size: 16px; margin: 0 0 10px 0; text-transform: uppercase;">¡Bienvenido al Club!</h3>
-                <p style="color: #fff; font-size: 14px; margin-bottom: 20px;">
-                    Creamos una cuenta por vos. Activá tu perfil y sumá <strong><span style="color: #d4af37;">500 puntos</span></strong> para canjear en la barra.
-                </p>
-                <a href="${reservationDetails.activationLink}" style="background-color: #d4af37; color: #000; padding: 12px 20px; text-decoration: none; font-weight: bold; font-size: 14px; border-radius: 4px; display: inline-block;">ACTIVAR CUENTA</a>
-            </div>
-            ` : ''}
-            
-            <!-- QR Section -->
-            <div style="text-align: center; padding: 20px; background: #fff; border-radius: 4px;">
-                <img src="${qrDataURL}" alt="Ticket QR" style="width: 150px; height: 150px;" />
-                <p style="color: #333; font-size: 12px; margin: 10px 0 0 0; font-family: monospace;">ID: ${reservationDetails.id}</p>
-            </div>
-            
-            <!-- Calendar Section -->
-            <div style="text-align: center; margin-top: 25px;">
-                <a href="${googleCalendarUrl}" target="_blank" style="color: #4285f4; text-decoration: none; font-size: 13px; font-weight: bold;">+ Agregar a Google Calendar</a>
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <div style="text-align: center; padding: 20px; border-top: 1px solid #333; background-color: #111;">
-            <p style="color: #666; font-size: 11px; margin: 0;">Bargoglio Club | Buenos Aires, Argentina</p>
-        </div>
-    </div>
-</body>
-</html>
-            `,
-            text: `Reserva Confirmada - ${reservationDetails.eventName} - ${formatDate(reservationDetails.date)} a las ${reservationDetails.time || '22:00'} hs. ID de reserva: ${reservationDetails.id}. ${reservationDetails.activationLink ? 'Activa tu cuenta aquí: ' + reservationDetails.activationLink : ''}`
-=======
-            replyTo: "no-reply@bargoglio.com.ar",
             subject: `Reserva confirmada: ${reservationDetails.eventName}`, 
             text: `Hola,\n\nTu reserva en Bargoglio Club está confirmada. Te esperamos.\n\nDETALLES DEL EVENTO\nEvento: ${reservationDetails.eventName}\nFecha: ${formatDate(reservationDetails.date)}\nHora: ${reservationDetails.time || '22:00'} hs\nUbicaciones: ${reservationDetails.seats.join(', ')}\n\nID DE RESERVA: ${reservationDetails.id}\n\nPor favor, anunciate en la puerta con tu nombre, DNI o este número de reserva.\n\n${reservationDetails.activationLink ? '--\n¡Bienvenido al Club!\nCreamos una cuenta para vos. Activá tu perfil haciendo clic en el siguiente enlace para sumar 500 puntos (o copiándolo en el navegador):\n' + reservationDetails.activationLink + '\n\n' : ''}--\nBargoglio Club\nBuenos Aires, Argentina`
->>>>>>> b81bb031b0be7f910c1444934b97a3eb1fb83207
         });
 
         console.log("[Email] Ticket sent successfully to:", to, "Message ID:", info.messageId);
