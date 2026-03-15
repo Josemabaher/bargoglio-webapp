@@ -370,19 +370,26 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script>
-        // Initialize Firebase
+        // Parse URL params — Firebase includes apiKey in the reset link
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        const oobCode = urlParams.get('oobCode');
+        const apiKey = urlParams.get('apiKey');
+
+        if (!apiKey) {
+            document.getElementById('error-message').textContent = 'Enlace incompleto: falta la clave de autenticación.';
+            document.getElementById('state-loading').classList.remove('active');
+            document.getElementById('state-error').classList.add('active');
+        }
+
+        // Initialize Firebase with the apiKey from the URL
         firebase.initializeApp({
-            apiKey: "AIzaSyDllJfoPisb38CMfibVEvK4vsDxt8QlBfU",
+            apiKey: apiKey,
             authDomain: "bargoglio-61dfc.firebaseapp.com",
             projectId: "bargoglio-61dfc"
         });
 
         const auth = firebase.auth();
-
-        // Parse URL params
-        const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode');
-        const oobCode = urlParams.get('oobCode');
 
         // DOM elements
         const stateLoading = document.getElementById('state-loading');
