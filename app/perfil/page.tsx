@@ -436,14 +436,11 @@ export default function ProfilePage() {
                                                         {item.event}
                                                     </h4>
                                                     <p className="text-stone-500 text-xs mt-1">
-                                                        {item.date} • {item.seats} {item.seats === 1 ? 'lugar' : 'lugares'}
+                                                        {item.date !== 'N/A' ? `${item.date} • ` : ''}{item.seats} {item.seats === 1 ? 'lugar' : 'lugares'}
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="text-right flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 border-stone-800/50 pt-4 md:pt-0">
-                                                <span className="text-xs text-stone-600 md:mb-1">Total abonado</span>
-                                                <span className="text-white font-bold md:text-xl">${item.spent.toLocaleString()}</span>
-                                            </div>
+
                                         </div>
                                     ))
                                 )}

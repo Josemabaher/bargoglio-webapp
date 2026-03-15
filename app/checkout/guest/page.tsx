@@ -10,6 +10,40 @@ import { useAuth } from "@/src/lib/context/AuthContext";
 import { db } from "@/src/lib/firebase/config";
 import { doc, getDoc } from "firebase/firestore";
 
+const PROVINCIAS_ARGENTINA = [
+    'Ciudad Autónoma de Buenos Aires',
+    'Buenos Aires',
+    'Catamarca',
+    'Chaco',
+    'Chubut',
+    'Córdoba',
+    'Corrientes',
+    'Entre Ríos',
+    'Formosa',
+    'Jujuy',
+    'La Pampa',
+    'La Rioja',
+    'Mendoza',
+    'Misiones',
+    'Neuquén',
+    'Río Negro',
+    'Salta',
+    'San Juan',
+    'San Luis',
+    'Santa Cruz',
+    'Santa Fe',
+    'Santiago del Estero',
+    'Tierra del Fuego',
+    'Tucumán'
+];
+
+function capitalizeFirst(str: string): string {
+    return str
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+}
+
 interface CartState {
     eventId: string;
     eventTitle: string;
@@ -85,7 +119,16 @@ export default function GuestCheckoutPage() {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === 'nombre' || name === 'apellido') {
+            setFormData(prev => ({ ...prev, [name]: capitalizeFirst(value) }));
+        } else if (name === 'fecha_nacimiento') {
+            // Prevent years with more than 4 digits
+            const parts = value.split('-');
+            if (parts[0] && parts[0].length > 4) return;
+            setFormData(prev => ({ ...prev, [name]: value }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handlePayment = async (e: React.FormEvent) => {
@@ -212,6 +255,8 @@ export default function GuestCheckoutPage() {
                                             <FaCalendarAlt className="absolute left-3 top-3.5 text-stone-500" />
                                             <input
                                                 required type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleInputChange}
+                                                max="2010-12-31"
+                                                min="1920-01-01"
                                                 className="w-full bg-stone-900/50 border border-white/10 rounded-lg p-3 pl-10 text-white focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none transition-all"
                                             />
                                         </div>
@@ -254,11 +299,15 @@ export default function GuestCheckoutPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs uppercase tracking-widest text-stone-400 font-bold block">Provincia <span className="text-red-500">*</span></label>
-                                        <input
+                                        <select
                                             required name="provincia" value={formData.provincia} onChange={handleInputChange}
-                                            className="w-full bg-stone-900/50 border border-white/10 rounded-lg p-3 text-white focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none transition-all"
-                                            placeholder="Provincia"
-                                        />
+                                            className="w-full bg-stone-900/50 border border-white/10 rounded-lg p-3 text-white focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none transition-all appearance-none"
+                                        >
+                                            <option value="" disabled className="text-stone-500">Seleccioná tu provincia</option>
+                                            {PROVINCIAS_ARGENTINA.map(prov => (
+                                                <option key={prov} value={prov} className="bg-stone-900 text-white">{prov}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
                             </form>

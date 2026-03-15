@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activar Cuenta - Bargoglio Club</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background-color: #121212;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background blurs */
+        .bg-blur-1 {
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 50vh;
+            height: 50vh;
+            background: rgba(161, 26, 22, 0.15);
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+        }
+        .bg-blur-2 {
+            position: absolute;
+            bottom: 20%;
+            right: 20%;
+            width: 40vh;
+            height: 40vh;
+            background: rgba(212, 175, 55, 0.05);
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Logo section */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .logo-section img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 16px;
+            opacity: 0.9;
+            filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+        }
+        .logo-section h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: #d4af37;
+            font-size: 30px;
+            letter-spacing: 6px;
+            font-weight: 400;
+        }
+        .logo-section p {
+            color: #78716c;
+            font-size: 11px;
+            letter-spacing: 3px;
+            margin-top: 8px;
+            text-transform: uppercase;
+        }
+
+        /* Card */
+        .card {
+            background: rgba(41, 37, 36, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 40px 32px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, transparent, #A11A16, transparent);
+        }
+
+        /* States */
+        .state { display: none; }
+        .state.active { display: block; }
+
+        /* Loading state */
+        .loading-text {
+            text-align: center;
+            color: #d4af37;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 13px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Error state */
+        .error-box {
+            text-align: center;
+        }
+        .error-box p {
+            color: #f87171;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .btn-outline-red {
+            display: inline-block;
+            padding: 10px 24px;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #f87171;
+            font-weight: 700;
+            letter-spacing: 3px;
+            font-size: 11px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            cursor: pointer;
+            background: transparent;
+            transition: background 0.3s;
+            text-decoration: none;
+        }
+        .btn-outline-red:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Form state */
+        .form-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .form-header h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: #fff;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .form-header p {
+            color: #a8a29e;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .form-header .email-highlight {
+            color: #d4af37;
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            color: #78716c;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+        .form-group input {
+            width: 100%;
+            background: rgba(12, 10, 9, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: #fff;
+            font-family: monospace;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-group input::placeholder {
+            color: #44403c;
+        }
+        .form-group input:focus {
+            border-color: #d4af37;
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.15);
+        }
+
+        .form-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            color: #f87171;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .form-error.visible { display: block; }
+
+        .btn-gold {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #d4af37, #b8960c);
+            color: #1c1917;
+            font-weight: 700;
+            letter-spacing: 2px;
+            font-size: 13px;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+        }
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #e5c548, #d4af37);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+            transform: translateY(-1px);
+        }
+        .btn-gold:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Success state */
+        .success-box {
+            text-align: center;
+        }
+        .success-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            margin-bottom: 16px;
+        }
+        .success-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+        .success-box h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: #fff;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+        }
+        .success-box p {
+            color: #d6d3d1;
+            font-size: 14px;
+            line-height: 1.6;
+            font-weight: 300;
+            margin-bottom: 24px;
+        }
+
+        .btn-red {
+            width: 100%;
+            padding: 14px 24px;
+            background: #A11A16;
+            color: #fde68a;
+            font-weight: 700;
+            letter-spacing: 2px;
+            font-size: 13px;
+            text-transform: uppercase;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            box-shadow: 0 4px 15px rgba(161, 26, 22, 0.2);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-red:hover {
+            background: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blur-1"></div>
+    <div class="bg-blur-2"></div>
+
+    <div class="container">
+        <div class="logo-section">
+            <img src="https://bargoglio-webapp.vercel.app/Bargoglio-Logo-Circulo-Transparente-02.png" alt="Bargoglio Club">
+            <h1>BARGOGLIO</h1>
+            <p>Plataforma Cultural</p>
+        </div>
+
+        <div class="card">
+            <!-- Loading -->
+            <div id="state-loading" class="state active">
+                <p class="loading-text">Validando enlace...</p>
+            </div>
+
+            <!-- Error -->
+            <div id="state-error" class="state">
+                <div class="error-box">
+                    <p id="error-message">El enlace es inválido o ha expirado.</p>
+                    <a href="https://bargoglio-webapp.vercel.app" class="btn-outline-red">Volver al Inicio</a>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div id="state-form" class="state">
+                <div class="form-header">
+                    <h2>Activar Cuenta</h2>
+                    <p>Creá una contraseña segura para tu cuenta asociada al correo <strong class="email-highlight" id="user-email"></strong>.</p>
+                </div>
+
+                <div class="form-error" id="form-error"></div>
+
+                <form id="reset-form">
+                    <div class="form-group">
+                        <label>Nueva Contraseña</label>
+                        <input type="password" id="new-password" required minlength="6" placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar Contraseña</label>
+                        <input type="password" id="confirm-password" required minlength="6" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn-gold" id="submit-btn">Guardar y Activar</button>
+                </form>
+            </div>
+
+            <!-- Success -->
+            <div id="state-success" class="state">
+                <div class="success-box">
+                    <div class="success-icon">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h2>¡Contraseña Guardada!</h2>
+                    <p>Tu nueva contraseña fue configurada exitosamente. Ya podés acceder a tu cuenta y ver tus Puntos en el Club.</p>
+                    <a href="https://bargoglio-webapp.vercel.app/perfil" class="btn-red">Ir a Mi Perfil</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase JS SDK (compat for simplicity in standalone page) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script>
+        // Initialize Firebase
+        firebase.initializeApp({
+            apiKey: "AIzaSyDllJfoPisb38CMfibVEvK4vsDxt8QlBfU",
+            authDomain: "bargoglio-61dfc.firebaseapp.com",
+            projectId: "bargoglio-61dfc"
+        });
+
+        const auth = firebase.auth();
+
+        // Parse URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        const oobCode = urlParams.get('oobCode');
+
+        // DOM elements
+        const stateLoading = document.getElementById('state-loading');
+        const stateError = document.getElementById('state-error');
+        const stateForm = document.getElementById('state-form');
+        const stateSuccess = document.getElementById('state-success');
+        const errorMessage = document.getElementById('error-message');
+        const userEmail = document.getElementById('user-email');
+        const formError = document.getElementById('form-error');
+        const resetForm = document.getElementById('reset-form');
+        const submitBtn = document.getElementById('submit-btn');
+
+        function showState(state) {
+            stateLoading.classList.remove('active');
+            stateError.classList.remove('active');
+            stateForm.classList.remove('active');
+            stateSuccess.classList.remove('active');
+            state.classList.add('active');
+        }
+
+        // Verify the code
+        if (mode === 'resetPassword' && oobCode) {
+            auth.verifyPasswordResetCode(oobCode)
+                .then(function(email) {
+                    userEmail.textContent = email;
+                    showState(stateForm);
+                })
+                .catch(function(error) {
+                    console.error('Verification error:', error);
+                    errorMessage.textContent = 'El enlace de recuperación es inválido o ha expirado. Por favor, solicitá uno nuevo desde la app.';
+                    showState(stateError);
+                });
+        } else {
+            errorMessage.textContent = 'Enlace incompleto o modo no soportado.';
+            showState(stateError);
+        }
+
+        // Handle form submission
+        resetForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            formError.classList.remove('visible');
+
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (newPassword !== confirmPassword) {
+                formError.textContent = 'Las contraseñas no coinciden.';
+                formError.classList.add('visible');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                formError.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+                formError.classList.add('visible');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+
+            auth.confirmPasswordReset(oobCode, newPassword)
+                .then(function() {
+                    showState(stateSuccess);
+                })
+                .catch(function(error) {
+                    console.error('Reset error:', error);
+                    formError.textContent = 'Hubo un error al actualizar tu contraseña. Intentá nuevamente.';
+                    formError.classList.add('visible');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Guardar y Activar';
+                });
+        });
+    </script>
+</body>
+</html>

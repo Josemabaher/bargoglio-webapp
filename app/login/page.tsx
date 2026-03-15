@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { loginWithGoogle, signInWithEmailAndPassword } from "@/src/lib/firebase/auth";
 import { auth } from "@/src/lib/firebase/config";
+import { sendPasswordResetEmail } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaGoogle, FaEnvelope, FaLock, FaArrowRight, FaCircleNotch } from "react-icons/fa";
@@ -13,7 +14,21 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [resetSent, setResetSent] = useState(false);
     const router = useRouter();
+
+    const handleForgotPassword = async () => {
+        const resetEmail = email || prompt("Ingresá tu email para recuperar tu contraseña:");
+        if (!resetEmail) return;
+        try {
+            await sendPasswordResetEmail(auth, resetEmail);
+            setResetSent(true);
+            setError("");
+        } catch (err: any) {
+            console.error(err);
+            setError("No se pudo enviar el email de recuperación. Verificá que el email sea correcto.");
+        }
+    };
 
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -181,11 +196,25 @@ export default function LoginPage() {
                         <FaGoogle className="text-red-500" /> Google
                     </button>
 
-                    <div className="mt-8 text-center text-sm text-stone-500">
-                        ¿No tenés cuenta?{" "}
-                        <Link href="/registro" className="text-bargoglio-red hover:underline font-bold">
-                            Registrate ahora
-                        </Link>
+                    <div className="mt-8 text-center text-sm text-stone-500 space-y-3">
+                        <div>
+                            ¿No tenés cuenta?{" "}
+                            <Link href="/registro" className="text-bargoglio-red hover:underline font-bold">
+                                Registrate ahora
+                            </Link>
+                        </div>
+                        <div>
+                            <button
+                                type="button"
+                                onClick={handleForgotPassword}
+                                className="text-stone-400 hover:text-white hover:underline transition-colors text-xs"
+                            >
+                                ¿Te olvidaste la contraseña?
+                            </button>
+                            {resetSent && (
+                                <p className="text-green-500 text-xs mt-2">✓ Te enviamos un email para restablecer tu contraseña.</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
