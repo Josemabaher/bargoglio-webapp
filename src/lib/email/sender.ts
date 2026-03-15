@@ -80,73 +80,15 @@ const formatDate = (dateString: string) => {
 
 
 export async function sendTicketEmail(to: string, reservationDetails: ReservationDetails) {
-    // 1. Generate QR
-    const qrDataURL = await QRCode.toDataURL(reservationDetails.id, {
-        width: 150,
-        margin: 1,
-        color: { dark: '#000000', light: '#ffffff' }
-    });
-
-    // 2. Generate Calendar URL
+    // 1. Generate Calendar URL
     const googleCalendarUrl = generateGoogleCalendarUrl(reservationDetails);
-    const appUrl = process.env.NEXT_PUBLIC_URL || 'https://bargoglio-webapp.vercel.app';
 
-    // 3. Send Email
+    // 2. Send Email
     try {
         const info = await transporter.sendMail({
             from: process.env.SMTP_USER, 
             to: to,
             replyTo: process.env.SMTP_USER,
-            subject: `Entradas: ${reservationDetails.eventName} - Bargoglio`, 
-            html: `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tu Reserva en Bargoglio</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #1a1a1a; font-family: Helvetica, Arial, sans-serif;">
-    <div style="max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border: 1px solid #d4af37;">
-        
-        <!-- Header -->
-        <div style="text-align: center; padding: 30px 20px; border-bottom: 1px solid #333;">
-            <img src="${appUrl}/Bargoglio-Logo-Circulo-Transparente-02.png" alt="Bargoglio" style="width: 80px; height: 80px; margin-bottom: 15px;" />
-            <h1 style="color: #d4af37; font-size: 24px; margin: 0; letter-spacing: 2px;">BARGOGLIO</h1>
-        </div>
-        
-        <!-- Main Content -->
-        <div style="padding: 30px;">
-            <h2 style="color: #fff; font-size: 20px; margin-top: 0; text-transform: uppercase;">Reserva Confirmada</h2>
-            <p style="color: #eee; font-size: 15px; margin-bottom: 25px;">
-                Asistí al evento anunciándote con tu DNI o mostrando el código QR en la puerta.
-            </p>
-            
-            <!-- Event Details -->
-            <div style="background-color: #222; border: 1px solid #444; padding: 20px; margin-bottom: 25px; border-radius: 4px;">
-                <p style="margin: 0 0 10px 0;">
-                    <span style="color: #888; font-size: 11px; display: block; text-transform: uppercase;">Evento</span>
-                    <strong style="color: #fff; font-size: 16px;">${reservationDetails.eventName}</strong>
-                </p>
-                <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 15px;">
-                    <tr>
-                        <td width="50%">
-                            <span style="color: #888; font-size: 11px; display: block; text-transform: uppercase;">Fecha</span>
-                            <strong style="color: #d4af37; font-size: 14px;">${formatDate(reservationDetails.date)}</strong>
-                        </td>
-                        <td width="50%">
-                            <span style="color: #888; font-size: 11px; display: block; text-transform: uppercase;">Hora</span>
-                            <strong style="color: #d4af37; font-size: 14px;">${reservationDetails.time || '22:00'} hs</strong>
-                        </td>
-                    </tr>
-                </table>
-                <div>
-                    <span style="color: #888; font-size: 11px; display: block; text-transform: uppercase;">Ubicaciones</span>
-                    <strong style="color: #fff; font-size: 14px; line-height: 1.4;">${reservationDetails.seats.join('<br>')}</strong>
-                </div>
-            </div>
-
-            <!-- Activation Box -->
             ${reservationDetails.activationLink ? `
             <div style="background-color: #A11A16; padding: 25px; margin-bottom: 25px; border-radius: 4px; border: 1px solid #d4af37; text-align: center;">
                 <h3 style="color: #fff; font-size: 16px; margin: 0 0 10px 0; text-transform: uppercase;">¡Bienvenido al Club!</h3>
@@ -178,6 +120,11 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
 </html>
             `,
             text: `Reserva Confirmada - ${reservationDetails.eventName} - ${formatDate(reservationDetails.date)} a las ${reservationDetails.time || '22:00'} hs. ID de reserva: ${reservationDetails.id}. ${reservationDetails.activationLink ? 'Activa tu cuenta aquí: ' + reservationDetails.activationLink : ''}`
+=======
+            replyTo: "no-reply@bargoglio.com.ar",
+            subject: `Reserva confirmada: ${reservationDetails.eventName}`, 
+            text: `Hola,\n\nTu reserva en Bargoglio Club está confirmada. Te esperamos.\n\nDETALLES DEL EVENTO\nEvento: ${reservationDetails.eventName}\nFecha: ${formatDate(reservationDetails.date)}\nHora: ${reservationDetails.time || '22:00'} hs\nUbicaciones: ${reservationDetails.seats.join(', ')}\n\nID DE RESERVA: ${reservationDetails.id}\n\nPor favor, anunciate en la puerta con tu nombre, DNI o este número de reserva.\n\n${reservationDetails.activationLink ? '--\n¡Bienvenido al Club!\nCreamos una cuenta para vos. Activá tu perfil haciendo clic en el siguiente enlace para sumar 500 puntos (o copiándolo en el navegador):\n' + reservationDetails.activationLink + '\n\n' : ''}--\nBargoglio Club\nBuenos Aires, Argentina`
+>>>>>>> b81bb031b0be7f910c1444934b97a3eb1fb83207
         });
 
         console.log("[Email] Ticket sent successfully to:", to, "Message ID:", info.messageId);
@@ -193,31 +140,9 @@ export async function sendWelcomeEmail(to: string, name: string, resetLink: stri
         const info = await transporter.sendMail({
             from: `"Bargoglio Club" <${process.env.SMTP_USER}>`,
             to: to,
-            subject: `Bienvenido a Bargoglio - Crea tu contraseña`,
-            html: `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-</head>
-<body style="margin: 0; padding: 0; background-color: #1a1a1a; font-family: Georgia, serif;">
-    <div style="max-width: 600px; margin: 0 auto; background: #1a1a1a; border: 1px solid #d4af37;">
-        <div style="text-align: center; padding: 40px 20px; border-bottom: 1px solid #d4af37;">
-            <h1 style="color: #d4af37; font-size: 32px; margin: 0; letter-spacing: 4px;">BARGOGLIO</h1>
-        </div>
-        <div style="padding: 40px 30px; color: #ccc;">
-            <h2 style="color: #fff; margin-bottom: 20px;">¡Hola ${name}!</h2>
-            <p>Gracias por tu compra. Hemos creado una cuenta para ti para que puedas gestionar tus puntos y reservas.</p>
-            <p>Por favor, haz clic en el siguiente botón para crear tu contraseña:</p>
-            <div style="text-align: center; margin: 40px 0;">
-                <a href="${resetLink}" style="display: inline-block; padding: 15px 30px; background: #d4af37; color: #000; text-decoration: none; font-weight: bold; border-radius: 4px;">CREAR CONTRASEÑA</a>
-            </div>
-            <p style="font-size: 12px; color: #666;">Si el botón no funciona, copia y pega este enlace: ${resetLink}</p>
-        </div>
-    </div>
-</body>
-</html>
-            `
+            replyTo: "no-reply@bargoglio.com.ar",
+            subject: `Bienvenido a Bargoglio - Tu cuenta`,
+            text: `¡Hola ${name}!\n\nGracias por tu compra. Hemos creado una cuenta para vos para que puedas gestionar tus puntos y reservas.\n\nPor favor, copiá y pegá el siguiente enlace en tu navegador para crear tu contraseña segura:\n${resetLink}\n\n--\nBargoglio Club\nBuenos Aires, Argentina`
         });
         console.log("[Email] Welcome email sent to:", to, "Message ID:", info.messageId);
     } catch (error) {
