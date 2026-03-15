@@ -108,7 +108,35 @@ export async function POST(req: NextRequest) {
                                 nivel_cliente: 'Bronce'
                             }, { merge: true });
 
-                            console.log("[Webhook] New user created, will include activation block in ticket email.");
+                            // Trigger Firebase to send password reset email from Google's own servers
+                            // This bypasses DonWeb entirely - Firebase handles sending
+                            const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+                            console.log("[Webhook] Firebase API key available:", !!apiKey);
+                            if (apiKey) {
+                                try {
+                                    const fbResponse = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            requestType: 'PASSWORD_RESET',
+                                            email: email,
+                                        })
+                                    });
+                                    const fbResult = await fbResponse.json();
+                                    console.log("[Webhook] Firebase sendOobCode response status:", fbResponse.status);
+                                    console.log("[Webhook] Firebase sendOobCode response body:", JSON.stringify(fbResult));
+                                    if (fbResponse.ok) {
+                                        console.log("[Webhook] Firebase password reset email triggered successfully for:", email);
+                                    } else {
+                                        console.error("[Webhook] Firebase sendOobCode error:", fbResult);
+                                    }
+                                } catch (emailErr) {
+                                    console.error("[Webhook] Failed to call Firebase sendOobCode:", emailErr);
+                                }
+                            } else {
+                                console.error("[Webhook] NEXT_PUBLIC_FIREBASE_API_KEY not found in env");
+                            }
+
                         }
 
                     } catch (err) {
@@ -259,8 +287,7 @@ export async function POST(req: NextRequest) {
                             eventName: eventTitle,
                             date: eventData.date || new Date().toISOString().split('T')[0],
                             time: eventData.time || '22:00',
-                            seats: emailSeats,
-                            isNewUser: is_guest === true || is_guest === 'true'
+                            seats: emailSeats
                         });
                         console.log(`[Webhook] Ticket email sent successfully to ${contactEmail}`);
                     } catch (emailError) {
