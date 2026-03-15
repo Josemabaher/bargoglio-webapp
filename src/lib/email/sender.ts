@@ -82,92 +82,41 @@ const formatDate = (dateString: string) => {
 export async function sendTicketEmail(to: string, reservationDetails: ReservationDetails) {
     // 1. Generate Calendar URL
     const googleCalendarUrl = generateGoogleCalendarUrl(reservationDetails);
-    const appUrl = process.env.NEXT_PUBLIC_URL || 'https://bargoglio-webapp.vercel.app';
 
     // 2. Send Email
     try {
         const info = await transporter.sendMail({
             from: `"Bargoglio Club" <${process.env.SMTP_USER}>`, 
             to: to,
-            subject: `Entradas: ${reservationDetails.eventName} - Bargoglio`, 
+            replyTo: "no-reply@bargoglio.com.ar",
+            subject: `Reserva confirmada: ${reservationDetails.eventName}`, 
             html: `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tu Reserva en Bargoglio</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #1a1a1a; font-family: Helvetica, Arial, sans-serif;">
-    <div style="max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border: 1px solid #d4af37;">
-        
-        <!-- Header -->
-        <div style="text-align: center; padding: 30px 20px; border-bottom: 1px solid #333;">
-            <h1 style="color: #d4af37; font-size: 24px; margin: 0; letter-spacing: 2px;">BARGOGLIO</h1>
-        </div>
-        
-        <!-- Main Content -->
-        <div style="padding: 30px;">
-            <h2 style="color: #fff; font-size: 20px; margin-top: 0; text-transform: uppercase;">Reserva Confirmada</h2>
-            <p style="color: #eee; font-size: 15px; margin-bottom: 25px;">
-                Asistí al evento anunciándote en la puerta con el DNI de la persona que realizó la compra o presentando este ID de Reserva:
-            </p>
-            
-            <!-- Reservation ID Header -->
-            <div style="text-align: center; background-color: #fff; padding: 15px; border-radius: 4px; margin-bottom: 25px;">
-                <p style="color: #333; font-size: 14px; margin: 0; font-family: monospace;"><strong>ID DE RESERVA: ${reservationDetails.id}</strong></p>
-            </div>
+<p>Hola,</p>
+<p>Tu reserva en Bargoglio Club está confirmada. Te esperamos.</p>
 
-            <!-- Event Details -->
-            <div style="background-color: #222; border: 1px solid #444; padding: 20px; margin-bottom: 25px; border-radius: 4px;">
-                <p style="margin: 0 0 10px 0;">
-                    <span style="color: #888; font-size: 11px; display: block; text-transform: uppercase;">Evento</span>
-                    <strong style="color: #fff; font-size: 16px;">${reservationDetails.eventName}</strong>
-                </p>
-                <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 15px;">
-                    <tr>
-                        <td width="50%">
-                            <span style="color: #888; font-size: 11px; display: block; text-transform: uppercase;">Fecha</span>
-                            <strong style="color: #d4af37; font-size: 14px;">${formatDate(reservationDetails.date)}</strong>
-                        </td>
-                        <td width="50%">
-                            <span style="color: #888; font-size: 11px; display: block; text-transform: uppercase;">Hora</span>
-                            <strong style="color: #d4af37; font-size: 14px;">${reservationDetails.time || '22:00'} hs</strong>
-                        </td>
-                    </tr>
-                </table>
-                <div>
-                    <span style="color: #888; font-size: 11px; display: block; text-transform: uppercase;">Ubicaciones</span>
-                    <strong style="color: #fff; font-size: 14px; line-height: 1.4;">${reservationDetails.seats.join('<br>')}</strong>
-                </div>
-            </div>
+<p><strong>DETALLES DEL EVENTO</strong><br>
+Evento: ${reservationDetails.eventName}<br>
+Fecha: ${formatDate(reservationDetails.date)}<br>
+Hora: ${reservationDetails.time || '22:00'} hs<br>
+Ubicaciones: ${reservationDetails.seats.join(', ')}</p>
 
-            <!-- Activation Box -->
-            ${reservationDetails.activationLink ? `
-            <div style="background-color: #A11A16; padding: 25px; margin-bottom: 25px; border-radius: 4px; border: 1px solid #d4af37; text-align: center;">
-                <h3 style="color: #fff; font-size: 16px; margin: 0 0 10px 0; text-transform: uppercase;">¡Bienvenido al Club!</h3>
-                <p style="color: #fff; font-size: 14px; margin-bottom: 20px;">
-                    Creamos una cuenta por vos. Activá tu perfil y sumá <strong><span style="color: #d4af37;">500 puntos</span></strong> para canjear en la barra.
-                </p>
-                <a href="${reservationDetails.activationLink}" style="background-color: #d4af37; color: #000; padding: 12px 20px; text-decoration: none; font-weight: bold; font-size: 14px; border-radius: 4px; display: inline-block;">ACTIVAR CUENTA</a>
-            </div>
-            ` : ''}
-            
-            <!-- Calendar Section -->
-            <div style="text-align: center; margin-top: 25px;">
-                <a href="${googleCalendarUrl}" target="_blank" style="color: #4285f4; text-decoration: none; font-size: 13px; font-weight: bold;">+ Agregar a Google Calendar</a>
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <div style="text-align: center; padding: 20px; border-top: 1px solid #333; background-color: #111;">
-            <p style="color: #666; font-size: 11px; margin: 0;">Bargoglio Club | Buenos Aires, Argentina</p>
-        </div>
-    </div>
-</body>
-</html>
+<p><strong>ID DE RESERVA: ${reservationDetails.id}</strong></p>
+
+<p>Por favor, anunciate en la puerta con tu nombre, DNI o este número de reserva.</p>
+
+${reservationDetails.activationLink ? `
+<p>--<br>
+<strong>¡Bienvenido al Club!</strong><br>
+Creamos una cuenta para vos. Activá tu perfil haciendo clic en el enlace de abajo para sumar 500 puntos para tu próxima consumición:<br>
+<a href="${reservationDetails.activationLink}">${reservationDetails.activationLink}</a>
+</p>
+` : ''}
+
+<p>--<br>
+Bargoglio Club<br>
+Buenos Aires, Argentina</p>
             `,
-            text: `Reserva Confirmada - ${reservationDetails.eventName} - ${formatDate(reservationDetails.date)} a las ${reservationDetails.time || '22:00'} hs. ID de reserva: ${reservationDetails.id}. ${reservationDetails.activationLink ? 'Activa tu cuenta aquí: ' + reservationDetails.activationLink : ''}`
+            text: `Hola,\n\nTu reserva en Bargoglio Club está confirmada. Te esperamos.\n\nDETALLES DEL EVENTO\nEvento: ${reservationDetails.eventName}\nFecha: ${formatDate(reservationDetails.date)}\nHora: ${reservationDetails.time || '22:00'} hs\nUbicaciones: ${reservationDetails.seats.join(', ')}\n\nID DE RESERVA: ${reservationDetails.id}\n\nPor favor, anunciate en la puerta con tu nombre, DNI o este número de reserva.\n\n${reservationDetails.activationLink ? '--\n¡Bienvenido al Club!\nCreamos una cuenta para vos. Activá tu perfil haciendo clic en el siguiente enlace para sumar 500 puntos:\n' + reservationDetails.activationLink + '\n\n' : ''}--\nBargoglio Club\nBuenos Aires, Argentina`
         });
 
         console.log("[Email] Ticket sent successfully to:", to, "Message ID:", info.messageId);
