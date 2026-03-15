@@ -109,8 +109,18 @@ export async function POST(req: NextRequest) {
                             }, { merge: true });
 
                             // Generate Password Reset Link for Account Claiming
-                            activationLink = await adminAuth.generatePasswordResetLink(email);
-                            console.log("[Webhook] Generated activation link for new user.");
+                            const rawLink = await adminAuth.generatePasswordResetLink(email);
+                            
+                            // Parse out the important parts (oobCode, mode) from Firebase's default link 
+                            // to insert them into our CUSTOM Vercel page instead
+                            const fbParams = new URL(rawLink).searchParams;
+                            const oobCode = fbParams.get('oobCode');
+                            const mode = fbParams.get('mode') || 'resetPassword';
+                            
+                            const appUrl = process.env.NEXT_PUBLIC_URL || 'https://bargoglio-webapp.vercel.app';
+                            activationLink = `${appUrl}/auth/action?mode=${mode}&oobCode=${oobCode}`;
+
+                            console.log("[Webhook] Generated custom verification link:", activationLink);
                         }
 
                     } catch (err) {
