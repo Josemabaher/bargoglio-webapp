@@ -7,7 +7,6 @@ export interface ReservationDetails {
     date: string;
     time: string;
     seats: string[];
-    activationLink?: string;
 }
 
 // Create a transporter object using the default SMTP transport
@@ -90,7 +89,7 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
             to: to,
             replyTo: process.env.SMTP_USER,
             subject: `Reserva confirmada: ${reservationDetails.eventName}`, 
-            text: `Hola,\n\nTu reserva en Bargoglio Club está confirmada. Te esperamos.\n\nDETALLES DEL EVENTO\nEvento: ${reservationDetails.eventName}\nFecha: ${formatDate(reservationDetails.date)}\nHora: ${reservationDetails.time || '22:00'} hs\nUbicaciones: ${reservationDetails.seats.join(', ')}\n\nID DE RESERVA: ${reservationDetails.id}\n\nPor favor, anunciate en la puerta con tu nombre, DNI o este número de reserva.\n\n${reservationDetails.activationLink ? '--\n¡Bienvenido al Club!\nCreamos una cuenta para vos. Activá tu perfil haciendo clic en el siguiente enlace para sumar 500 puntos (o copiándolo en el navegador):\n' + reservationDetails.activationLink + '\n\n' : ''}--\nBargoglio Club\nBuenos Aires, Argentina`
+            text: `Hola,\n\nTu reserva en Bargoglio Club está confirmada. Te esperamos.\n\nDETALLES DEL EVENTO\nEvento: ${reservationDetails.eventName}\nFecha: ${formatDate(reservationDetails.date)}\nHora: ${reservationDetails.time || '22:00'} hs\nUbicaciones: ${reservationDetails.seats.join(', ')}\n\nID DE RESERVA: ${reservationDetails.id}\n\nPor favor, anunciate en la puerta con tu nombre, DNI o este número de reserva.\n\n--\nBargoglio Club\nBuenos Aires, Argentina`
         });
 
         console.log("[Email] Ticket sent successfully to:", to, "Message ID:", info.messageId);
@@ -101,17 +100,3 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
     }
 }
 
-export async function sendWelcomeEmail(to: string, name: string, resetLink: string) {
-    try {
-        const info = await transporter.sendMail({
-            from: `"Bargoglio Club" <${process.env.SMTP_USER}>`,
-            to: to,
-            replyTo: "no-reply@bargoglio.com.ar",
-            subject: `Bienvenido a Bargoglio - Tu cuenta`,
-            text: `¡Hola ${name}!\n\nGracias por tu compra. Hemos creado una cuenta para vos para que puedas gestionar tus puntos y reservas.\n\nPor favor, copiá y pegá el siguiente enlace en tu navegador para crear tu contraseña segura:\n${resetLink}\n\n--\nBargoglio Club\nBuenos Aires, Argentina`
-        });
-        console.log("[Email] Welcome email sent to:", to, "Message ID:", info.messageId);
-    } catch (error) {
-        console.error("[Email] Error sending welcome email:", error);
-    }
-}

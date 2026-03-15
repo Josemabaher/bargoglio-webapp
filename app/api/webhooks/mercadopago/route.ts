@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import MercadoPagoConfig, { Payment } from 'mercadopago';
 import { adminAuth, adminDb } from '@/src/lib/firebase/admin'; // Use Admin SDK
-import { sendTicketEmail, sendWelcomeEmail } from '@/src/lib/email/sender';
+import { sendTicketEmail } from '@/src/lib/email/sender';
 import { FieldValue } from 'firebase-admin/firestore';
 
 const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN || 'TEST-ACCESS-TOKEN' });
@@ -108,19 +108,25 @@ export async function POST(req: NextRequest) {
                                 nivel_cliente: 'Bronce'
                             }, { merge: true });
 
-                            // Generate Password Reset Link for Account Claiming
-                            const rawLink = await adminAuth.generatePasswordResetLink(email);
-                            
-                            // Parse out the important parts (oobCode, mode) from Firebase's default link 
-                            // to insert them into our CUSTOM Vercel page instead
-                            const fbParams = new URL(rawLink).searchParams;
-                            const oobCode = fbParams.get('oobCode');
-                            const mode = fbParams.get('mode') || 'resetPassword';
-                            
-                            const appUrl = process.env.NEXT_PUBLIC_URL || 'https://bargoglio-webapp.vercel.app';
-                            activationLink = `${appUrl}/auth/action?mode=${mode}&oobCode=${oobCode}`;
-
-                            console.log("[Webhook] Generated custom verification link:", activationLink);
+                            // Trigger Firebase's native Password Reset email to bypass DonWeb SPAM filters
+                            const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+                            if (apiKey) {
+                                try {
+                                    await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            requestType: 'PASSWORD_RESET',
+                                            email: email,
+                                        })
+                                    });
+                                    console.log("[Webhook] Triggered Firebase native password reset email for:", email);
+                                } catch (emailErr) {
+                                    console.error("[Webhook] Failed to trigger Firebase email:", emailErr);
+                                }
+                            } else {
+                                console.error("[Webhook] Missing NEXT_PUBLIC_FIREBASE_API_KEY, cannot trigger Firebase email.");
+                            }
                         }
 
                     } catch (err) {
@@ -271,8 +277,7 @@ export async function POST(req: NextRequest) {
                             eventName: eventTitle,
                             date: eventData.date || new Date().toISOString().split('T')[0],
                             time: eventData.time || '22:00',
-                            seats: emailSeats,
-                            activationLink: activationLink || undefined
+                            seats: emailSeats
                         });
                         console.log(`[Webhook] Ticket email sent successfully to ${contactEmail}`);
                     } catch (emailError) {
