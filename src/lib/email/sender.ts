@@ -90,33 +90,7 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
             to: to,
             replyTo: "no-reply@bargoglio.com.ar",
             subject: `Reserva confirmada: ${reservationDetails.eventName}`, 
-            html: `
-<p>Hola,</p>
-<p>Tu reserva en Bargoglio Club está confirmada. Te esperamos.</p>
-
-<p><strong>DETALLES DEL EVENTO</strong><br>
-Evento: ${reservationDetails.eventName}<br>
-Fecha: ${formatDate(reservationDetails.date)}<br>
-Hora: ${reservationDetails.time || '22:00'} hs<br>
-Ubicaciones: ${reservationDetails.seats.join(', ')}</p>
-
-<p><strong>ID DE RESERVA: ${reservationDetails.id}</strong></p>
-
-<p>Por favor, anunciate en la puerta con tu nombre, DNI o este número de reserva.</p>
-
-${reservationDetails.activationLink ? `
-<p>--<br>
-<strong>¡Bienvenido al Club!</strong><br>
-Creamos una cuenta para vos. Activá tu perfil haciendo clic en el enlace de abajo para sumar 500 puntos para tu próxima consumición:<br>
-<a href="${reservationDetails.activationLink}">${reservationDetails.activationLink}</a>
-</p>
-` : ''}
-
-<p>--<br>
-Bargoglio Club<br>
-Buenos Aires, Argentina</p>
-            `,
-            text: `Hola,\n\nTu reserva en Bargoglio Club está confirmada. Te esperamos.\n\nDETALLES DEL EVENTO\nEvento: ${reservationDetails.eventName}\nFecha: ${formatDate(reservationDetails.date)}\nHora: ${reservationDetails.time || '22:00'} hs\nUbicaciones: ${reservationDetails.seats.join(', ')}\n\nID DE RESERVA: ${reservationDetails.id}\n\nPor favor, anunciate en la puerta con tu nombre, DNI o este número de reserva.\n\n${reservationDetails.activationLink ? '--\n¡Bienvenido al Club!\nCreamos una cuenta para vos. Activá tu perfil haciendo clic en el siguiente enlace para sumar 500 puntos:\n' + reservationDetails.activationLink + '\n\n' : ''}--\nBargoglio Club\nBuenos Aires, Argentina`
+            text: `Hola,\n\nTu reserva en Bargoglio Club está confirmada. Te esperamos.\n\nDETALLES DEL EVENTO\nEvento: ${reservationDetails.eventName}\nFecha: ${formatDate(reservationDetails.date)}\nHora: ${reservationDetails.time || '22:00'} hs\nUbicaciones: ${reservationDetails.seats.join(', ')}\n\nID DE RESERVA: ${reservationDetails.id}\n\nPor favor, anunciate en la puerta con tu nombre, DNI o este número de reserva.\n\n${reservationDetails.activationLink ? '--\n¡Bienvenido al Club!\nCreamos una cuenta para vos. Activá tu perfil haciendo clic en el siguiente enlace para sumar 500 puntos (o copiándolo en el navegador):\n' + reservationDetails.activationLink + '\n\n' : ''}--\nBargoglio Club\nBuenos Aires, Argentina`
         });
 
         console.log("[Email] Ticket sent successfully to:", to, "Message ID:", info.messageId);
@@ -132,31 +106,9 @@ export async function sendWelcomeEmail(to: string, name: string, resetLink: stri
         const info = await transporter.sendMail({
             from: `"Bargoglio Club" <${process.env.SMTP_USER}>`,
             to: to,
-            subject: `Bienvenido a Bargoglio - Crea tu contraseña`,
-            html: `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-</head>
-<body style="margin: 0; padding: 0; background-color: #1a1a1a; font-family: Georgia, serif;">
-    <div style="max-width: 600px; margin: 0 auto; background: #1a1a1a; border: 1px solid #d4af37;">
-        <div style="text-align: center; padding: 40px 20px; border-bottom: 1px solid #d4af37;">
-            <h1 style="color: #d4af37; font-size: 32px; margin: 0; letter-spacing: 4px;">BARGOGLIO</h1>
-        </div>
-        <div style="padding: 40px 30px; color: #ccc;">
-            <h2 style="color: #fff; margin-bottom: 20px;">¡Hola ${name}!</h2>
-            <p>Gracias por tu compra. Hemos creado una cuenta para ti para que puedas gestionar tus puntos y reservas.</p>
-            <p>Por favor, haz clic en el siguiente botón para crear tu contraseña:</p>
-            <div style="text-align: center; margin: 40px 0;">
-                <a href="${resetLink}" style="display: inline-block; padding: 15px 30px; background: #d4af37; color: #000; text-decoration: none; font-weight: bold; border-radius: 4px;">CREAR CONTRASEÑA</a>
-            </div>
-            <p style="font-size: 12px; color: #666;">Si el botón no funciona, copia y pega este enlace: ${resetLink}</p>
-        </div>
-    </div>
-</body>
-</html>
-            `
+            replyTo: "no-reply@bargoglio.com.ar",
+            subject: `Bienvenido a Bargoglio - Tu cuenta`,
+            text: `¡Hola ${name}!\n\nGracias por tu compra. Hemos creado una cuenta para vos para que puedas gestionar tus puntos y reservas.\n\nPor favor, copiá y pegá el siguiente enlace en tu navegador para crear tu contraseña segura:\n${resetLink}\n\n--\nBargoglio Club\nBuenos Aires, Argentina`
         });
         console.log("[Email] Welcome email sent to:", to, "Message ID:", info.messageId);
     } catch (error) {
