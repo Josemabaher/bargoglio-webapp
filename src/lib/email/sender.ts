@@ -80,18 +80,11 @@ const formatDate = (dateString: string) => {
 
 
 export async function sendTicketEmail(to: string, reservationDetails: ReservationDetails) {
-    // 1. Generate QR
-    const qrDataURL = await QRCode.toDataURL(reservationDetails.id, {
-        width: 150,
-        margin: 1,
-        color: { dark: '#000000', light: '#ffffff' }
-    });
-
-    // 2. Generate Calendar URL
+    // 1. Generate Calendar URL
     const googleCalendarUrl = generateGoogleCalendarUrl(reservationDetails);
     const appUrl = process.env.NEXT_PUBLIC_URL || 'https://bargoglio-webapp.vercel.app';
 
-    // 3. Send Email
+    // 2. Send Email
     try {
         const info = await transporter.sendMail({
             from: `"Bargoglio Club" <${process.env.SMTP_USER}>`, 
@@ -110,7 +103,6 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
         
         <!-- Header -->
         <div style="text-align: center; padding: 30px 20px; border-bottom: 1px solid #333;">
-            <img src="${appUrl}/Bargoglio-Logo-Circulo-Transparente-02.png" alt="Bargoglio" style="width: 80px; height: 80px; margin-bottom: 15px;" />
             <h1 style="color: #d4af37; font-size: 24px; margin: 0; letter-spacing: 2px;">BARGOGLIO</h1>
         </div>
         
@@ -118,9 +110,14 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
         <div style="padding: 30px;">
             <h2 style="color: #fff; font-size: 20px; margin-top: 0; text-transform: uppercase;">Reserva Confirmada</h2>
             <p style="color: #eee; font-size: 15px; margin-bottom: 25px;">
-                Asistí al evento anunciándote con tu DNI o mostrando el código QR en la puerta.
+                Asistí al evento anunciándote en la puerta con el DNI de la persona que realizó la compra o presentando este ID de Reserva:
             </p>
             
+            <!-- Reservation ID Header -->
+            <div style="text-align: center; background-color: #fff; padding: 15px; border-radius: 4px; margin-bottom: 25px;">
+                <p style="color: #333; font-size: 14px; margin: 0; font-family: monospace;"><strong>ID DE RESERVA: ${reservationDetails.id}</strong></p>
+            </div>
+
             <!-- Event Details -->
             <div style="background-color: #222; border: 1px solid #444; padding: 20px; margin-bottom: 25px; border-radius: 4px;">
                 <p style="margin: 0 0 10px 0;">
@@ -155,12 +152,6 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
                 <a href="${reservationDetails.activationLink}" style="background-color: #d4af37; color: #000; padding: 12px 20px; text-decoration: none; font-weight: bold; font-size: 14px; border-radius: 4px; display: inline-block;">ACTIVAR CUENTA</a>
             </div>
             ` : ''}
-            
-            <!-- QR Section -->
-            <div style="text-align: center; padding: 20px; background: #fff; border-radius: 4px;">
-                <img src="${qrDataURL}" alt="Ticket QR" style="width: 150px; height: 150px;" />
-                <p style="color: #333; font-size: 12px; margin: 10px 0 0 0; font-family: monospace;">ID: ${reservationDetails.id}</p>
-            </div>
             
             <!-- Calendar Section -->
             <div style="text-align: center; margin-top: 25px;">
