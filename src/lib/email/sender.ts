@@ -94,8 +94,9 @@ export async function sendTicketEmail(to: string, reservationDetails: Reservatio
     // 3. Send Email
     try {
         const info = await transporter.sendMail({
-            from: `"Bargoglio Club" <${process.env.SMTP_USER}>`, 
+            from: process.env.SMTP_USER, 
             to: to,
+            replyTo: process.env.SMTP_USER,
             subject: `Entradas: ${reservationDetails.eventName} - Bargoglio`, 
             html: `
 <!DOCTYPE html>
