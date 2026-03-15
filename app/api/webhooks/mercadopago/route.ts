@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import MercadoPagoConfig, { Payment } from 'mercadopago';
 import { adminAuth, adminDb } from '@/src/lib/firebase/admin'; // Use Admin SDK
-import { sendTicketEmail } from '@/src/lib/email/sender';
+import { sendTicketEmail, sendWelcomeEmail } from '@/src/lib/email/sender';
 import { FieldValue } from 'firebase-admin/firestore';
 
 const client = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN || 'TEST-ACCESS-TOKEN' });
@@ -107,33 +107,10 @@ export async function POST(req: NextRequest) {
                                 points: 500, // Grant 500 initial points
                                 nivel_cliente: 'Bronce'
                             }, { merge: true });
-                        }
 
-                        // ALWAYS trigger Firebase password reset email for guest checkouts
-                        // Firebase sends this from Google's own servers (bypasses DonWeb)
-                        // Safe to call even for existing users - they'll just get a reset link
-                        const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-                        console.log("[Webhook] Triggering Firebase password reset for guest:", email, "API key available:", !!apiKey);
-                        if (apiKey) {
-                            try {
-                                const fbResponse = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        requestType: 'PASSWORD_RESET',
-                                        email: email,
-                                    })
-                                });
-                                const fbResult = await fbResponse.json();
-                                console.log("[Webhook] Firebase sendOobCode response:", fbResponse.status, JSON.stringify(fbResult));
-                                if (!fbResponse.ok) {
-                                    console.error("[Webhook] Firebase sendOobCode error:", fbResult);
-                                }
-                            } catch (emailErr) {
-                                console.error("[Webhook] Failed to call Firebase sendOobCode:", emailErr);
-                            }
-                        } else {
-                            console.error("[Webhook] NEXT_PUBLIC_FIREBASE_API_KEY not found in env");
+                            // Generate Password Reset Link for Account Claiming
+                            activationLink = await adminAuth.generatePasswordResetLink(email);
+                            console.log("[Webhook] Generated activation link for new user.");
                         }
 
                     } catch (err) {
@@ -284,7 +261,8 @@ export async function POST(req: NextRequest) {
                             eventName: eventTitle,
                             date: eventData.date || new Date().toISOString().split('T')[0],
                             time: eventData.time || '22:00',
-                            seats: emailSeats
+                            seats: emailSeats,
+                            activationLink: activationLink || undefined
                         });
                         console.log(`[Webhook] Ticket email sent successfully to ${contactEmail}`);
                     } catch (emailError) {
